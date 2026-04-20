@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sol Siege Calculator</title>
+<meta name="description" content="Sol Siege stat calculator — upgrade costs, stat predictions, reverse engineering, equipment builder.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════ DESIGN TOKENS ═══════════════════ */
+:root {
+  --bg: #0a0710;
+  --bg2: #0f0b1a;
+  --surface: #161225;
+  --surface2: #1c1630;
+  --border: rgba(139,115,85,0.18);
+  --border-glow: rgba(139,115,85,0.35);
+  --gold: #c9a84c;
+  --gold-dim: #8b7355;
+  --gold-bright: #f0d78c;
+  --text: #e2dcd0;
+  --text-muted: #7a7268;
+  --text-dim: #4a453d;
+  --danger: #ef4444;
+  --success: #22c55e;
+
+  /* Rarity colors */
+  --r-common: #94a3b8;
+  --r-uncommon: #4ade80;
+  --r-rare: #60a5fa;
+  --r-epic: #c084fc;
+  --r-legendary: #fbbf24;
+  --r-mythical: #f87171;
+
+  --r-common-bg: rgba(71,85,105,0.15);
+  --r-uncommon-bg: rgba(22,163,74,0.12);
+  --r-rare-bg: rgba(37,99,235,0.12);
+  --r-epic-bg: rgba(124,58,237,0.15);
+  --r-legendary-bg: rgba(217,119,6,0.15);
+  --r-mythical-bg: rgba(220,38,38,0.15);
+}
+
+/* ═══════════════════ RESET & BASE ═══════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(139,115,85,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(100,60,180,0.04) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ═══════════════════ LAYOUT ═══════════════════ */
+.app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+
+/* ═══════════════════ HEADER ═══════════════════ */
+.header {
+  text-align: center; padding: 32px 0 24px;
+}
+.header h1 {
+  font-family: 'Cinzel', serif; font-weight: 900; font-size: 2rem;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold), var(--gold-dim));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.header .subtitle {
+  font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* ═══════════════════ TABS ═══════════════════ */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 24px;
+  background: var(--surface); border-radius: 12px; padding: 4px;
+  border: 1px solid var(--border);
+}
+.tab-btn {
+  flex: 1; padding: 10px 8px; border: none; background: transparent;
+  color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 0.75rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  border-radius: 8px; cursor: pointer; transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); background: rgba(139,115,85,0.08); }
+.tab-btn.active {
+  color: var(--gold); background: rgba(201,168,76,0.1);
+  box-shadow: 0 0 12px rgba(201,168,76,0.08);
+}
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════════════════ CARDS ═══════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+}
+.card-title {
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: 1rem;
+  color: var(--gold); margin-bottom: 16px; letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon { font-size: 1.1rem; }
+
+/* ═══════════════════ FORM CONTROLS ═══════════════════ */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted);
+}
+.form-group input, .form-group select {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 0.9rem;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.15);
+}
+.form-group select { cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7268' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 28px;
+}
+.form-group select option { background: var(--surface); color: var(--text); }
+
+/* Rarity select coloring */
+select.rarity-select[data-rarity="common"] { color: var(--r-common); }
+select.rarity-select[data-rarity="uncommon"] { color: var(--r-uncommon); }
+select.rarity-select[data-rarity="rare"] { color: var(--r-rare); }
+select.rarity-select[data-rarity="epic"] { color: var(--r-epic); }
+select.rarity-select[data-rarity="legendary"] { color: var(--r-legendary); }
+select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
+
+/* ═══════════════════ BUTTONS ═══════════════════ */
+.btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.95rem;
+  letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.25s ease; margin-top: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), #a08040);
+  color: #0a0710; box-shadow: 0 4px 16px rgba(201,168,76,0.2);
+}
+.btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(201,168,76,0.35);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--surface2); color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* ═══════════════════ RESULTS ═══════════════════ */
+.results {
+  background: linear-gradient(135deg, rgba(22,18,37,0.95), rgba(15,11,26,0.98));
+  border: 1px solid var(--border-glow); border-radius: 14px;
+  padding: 20px; margin-top: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(201,168,76,0.08);
+}
+.results.hidden { display: none; }
+.results-title {
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.85rem;
+  color: var(--gold); margin-bottom: 12px; text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid rgba(139,115,85,0.08);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-label {
+  font-size: 0.8rem; color: var(--text-muted); font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+}
+.stat-value {
+  font-size: 0.95rem; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.stat-value .arrow { color: var(--gold-dim); margin: 0 6px; font-size: 0.75rem; }
+.stat-value .upgraded { color: var(--success); }
+.stat-value .base-val { color: var(--r-rare); }
+.stat-value .cost-scrap { color: var(--r-uncommon); }
+.stat-value .cost-siege { color: var(--r-legendary); }
+.stat-value .cap-warn { color: var(--r-epic); font-size: 0.7rem; font-weight: 500; }
+
+.cost-summary {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid rgba(139,115,85,0.15);
+}
+.cost-box {
+  background: rgba(0,0,0,0.25); border-radius: 10px; padding: 12px; text-align: center;
+  border: 1px solid rgba(139,115,85,0.08);
+}
+.cost-box .cost-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 4px; }
+.cost-box .cost-val { font-size: 1.2rem; font-weight: 700; }
+
+/* ═══════════════════ BUILDER ═══════════════════ */
+.slot-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+.slot-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; transition: border-color 0.2s;
+}
+.slot-card:hover { border-color: var(--border-glow); }
+.slot-header {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--gold-dim); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.slot-card .form-row { margin-bottom: 8px; }
+.slot-card .form-group label { font-size: 0.6rem; }
+.slot-card .form-group input, .slot-card .form-group select {
+  padding: 7px 10px; font-size: 0.8rem;
+}
+
+.builder-summary {
+  background: linear-gradient(135deg, rgba(22,18,37,0.95), rgba(15,11,26,0.98));
+  border: 1px solid var(--border-glow); border-radius: 14px;
+  padding: 24px; margin-top: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.summary-stat {
+  text-align: center; padding: 14px 8px;
+  background: rgba(0,0,0,0.25); border-radius: 10px;
+  border: 1px solid rgba(139,115,85,0.06);
+}
+.summary-stat .s-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.summary-stat .s-value { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
+.summary-stat .s-detail { font-size: 0.65rem; color: var(--text-dim); margin-top: 2px; }
+
+.set-bonuses { margin-top: 14px; }
+.set-bonus-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+  margin: 3px 4px 3px 0;
+}
+
+/* ═══════════════════ COST TABLE ═══════════════════ */
+.cost-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.78rem; }
+.cost-table th {
+  text-align: left; padding: 8px; font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted); border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.cost-table td {
+  padding: 6px 8px; border-bottom: 1px solid rgba(139,115,85,0.06);
+  font-variant-numeric: tabular-nums;
+}
+.cost-table tr:hover td { background: rgba(139,115,85,0.04); }
+.cost-table .total-row td { border-top: 2px solid var(--border-glow); font-weight: 700; color: var(--gold); }
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr; }
+  .tabs { flex-wrap: wrap; }
+  .tab-btn { font-size: 0.65rem; padding: 8px 4px; }
+  .header h1 { font-size: 1.5rem; }
+  .slot-grid { grid-template-columns: 1fr; }
+  .cost-summary { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ═══════════════════ SCROLLBAR ═══════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Sol Siege Calculator</h1>
+    <div class="subtitle">Equipment Stats & Upgrade Costs</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="forward">⚔️ Forward</button>
+    <button class="tab-btn" data-tab="reverse">🔄 Reverse</button>
+    <button class="tab-btn" data-tab="costs">💰 Costs</button>
+    <button class="tab-btn" data-tab="builder">🛡️ Builder</button>
+  </div>
+
+  <!-- ══════════ TAB 1: FORWARD CALCULATOR ══════════ -->
+  <div class="tab-content active" id="tab-forward">
+    <div class="card">
+      <div class="card-title"><span class="icon">⚔️</span> Forward Calculator</div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Enter item stats at any level and target level to see final stats & upgrade cost.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item Type</label>
+          <select id="fwd-type" onchange="toggleWeaponFields('fwd')">
+            <option value="weapon">Weapon</option>
+            <option value="equipment">Equipment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Rarity</label>
+          <select id="fwd-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value">
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic" selected>Epic</option>
+            <option value="legendary">Legendary</option>
+            <option value="mythical">Mythical</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>HP</label><input type="number" id="fwd-hp" value="30" min="0"></div>
+        <div class="form-group"><label>DMG</label><input type="number" id="fwd-dmg" value="8" min="0"></div>
+      </div>
+      <div class="form-row" id="fwd-weapon-fields">
+        <div class="form-group"><label>Crit %</label><input type="number" id="fwd-crit" value="2.0" min="0" step="0.1"></div>
+        <div class="form-group"><label>Speed (ms)</label><input type="number" id="fwd-speed" value="25" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Current Level</label><input type="number" id="fwd-from" value="0" min="0"></div>
+        <div class="form-group"><label>Target Level</label><input type="number" id="fwd-to" value="50" min="0"></div>
+      </div>
+      <button class="btn btn-primary" onclick="calcForward()">Calculate</button>
+    </div>
+    <div class="results hidden" id="fwd-results"></div>
+  </div>
+
+  <!-- ══════════ TAB 2: REVERSE CALCULATOR ══════════ -->
+  <div class="tab-content" id="tab-reverse">
+    <div class="card">
+      <div class="card-title"><span class="icon">🔄</span> Reverse Calculator</div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Enter current stats & level to find original base stats.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item Type</label>
+          <select id="rev-type" onchange="toggleWeaponFields('rev')">
+            <option value="weapon">Weapon</option>
+            <option value="equipment">Equipment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Rarity</label>
+          <select id="rev-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value">
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic" selected>Epic</option>
+            <option value="legendary">Legendary</option>
+            <option value="mythical">Mythical</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Current HP</label><input type="number" id="rev-hp" value="3520" min="0"></div>
+        <div class="form-group"><label>Current DMG</label><input type="number" id="rev-dmg" value="940" min="0"></div>
+      </div>
+      <div class="form-row" id="rev-weapon-fields">
+        <div class="form-group"><label>Current Crit %</label><input type="number" id="rev-crit" value="2.0" min="0" step="0.1"></div>
+        <div class="form-group"><label>Current Speed (ms)</label><input type="number" id="rev-speed" value="25" min="0"></div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group"><label>Current Upgrade Level</label><input type="number" id="rev-level" value="50" min="0"></div>
+      </div>
+      <button class="btn btn-primary" onclick="calcReverse()">Calculate Base Stats</button>
+    </div>
+    <div class="results hidden" id="rev-results"></div>
+  </div>
+
+  <!-- ══════════ TAB 3: UPGRADE COSTS ══════════ -->
+  <div class="tab-content" id="tab-costs">
+    <div class="card">
+      <div class="card-title"><span class="icon">💰</span> Upgrade Cost Table</div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">See Scrap Metal & $SIEGE cost for each upgrade level.</p>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>Item Type</label>
+          <select id="cost-type">
+            <option value="weapon">Weapon</option>
+            <option value="equipment">Equipment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Rarity</label>
+          <select id="cost-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value">
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic" selected>Epic</option>
+            <option value="legendary">Legendary</option>
+            <option value="mythical">Mythical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Level</label>
+          <input type="number" id="cost-target" value="50" min="1" max="200">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="calcCosts()">Show Cost Table</button>
+    </div>
+    <div class="results hidden" id="cost-results"></div>
+  </div>
+
+  <!-- ══════════ TAB 4: CHARACTER BUILDER ══════════ -->
+  <div class="tab-content" id="tab-builder">
+
+    <!-- CHARACTER SECTION -->
+    <div class="card">
+      <div class="card-title"><span class="icon">👤</span> Character</div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>Class</label>
+          <select id="b-class" onchange="updateBuilder()">
+            <option value="warrior">⚔️ Warrior</option>
+            <option value="archer">🏹 Archer</option>
+            <option value="mage">🔮 Mage</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Level</label>
+          <input type="number" id="b-level" value="50" min="1" max="500" onchange="updateBuilder()">
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.6rem">Skill Pts Available</label>
+          <div id="b-sp-info" style="padding:10px 0;font-size:0.85rem;font-weight:700;color:var(--gold)">49</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILL POINTS -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⭐</span> Skill Points</div>
+      <p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:12px">1 point per level. Distribute across stats.</p>
+      <div class="form-row triple" style="margin-bottom:6px">
+        <div class="form-group">
+          <label>⚔️ Damage</label>
+          <input type="number" id="sp-dmg" value="20" min="0" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">+5% DMG mult, +2.5% flat</span>
+        </div>
+        <div class="form-group">
+          <label>🎯 Crit</label>
+          <input type="number" id="sp-crit" value="10" min="0" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">+1% crit chance</span>
+        </div>
+        <div class="form-group">
+          <label>⚡ Speed</label>
+          <input type="number" id="sp-speed" value="5" min="0" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">-10ms interval</span>
+        </div>
+      </div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>❤️ HP</label>
+          <input type="number" id="sp-hp" value="10" min="0" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">+1% total HP</span>
+        </div>
+        <div class="form-group">
+          <label>🪙 Token</label>
+          <input type="number" id="sp-token" value="4" min="0" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">+2.5% token drop</span>
+        </div>
+        <div class="form-group">
+          <label style="font-size:0.6rem;color:var(--text-muted)">Used / Total</label>
+          <div id="sp-counter" style="padding:10px 0;font-size:0.85rem;font-weight:700">0/49</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MASTERY -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🌟</span> Mastery <span style="font-size:0.65rem;color:var(--text-dim);font-family:Inter;font-weight:400;margin-left:8px">(Unlocks at Wave 100)</span></div>
+      <div class="form-row triple" style="margin-bottom:6px">
+        <div class="form-group">
+          <label>🗡️ Life Steal</label>
+          <input type="number" id="m-lifesteal" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt</span>
+        </div>
+        <div class="form-group">
+          <label>⚔️ Double Strike</label>
+          <input type="number" id="m-doublestrike" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.5%/pt</span>
+        </div>
+        <div class="form-group">
+          <label>💀 Armor Pen</label>
+          <input type="number" id="m-armorpen" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.75%/pt</span>
+        </div>
+      </div>
+      <div class="form-row triple" style="margin-bottom:6px">
+        <div class="form-group">
+          <label>👹 Boss Slayer</label>
+          <input type="number" id="m-bossslayer" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.1%/pt</span>
+        </div>
+        <div class="form-group">
+          <label>🔪 Finisher</label>
+          <input type="number" id="m-finisher" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.2%/pt</span>
+        </div>
+        <div class="form-group">
+          <label>🛡️ Armor (DR)</label>
+          <input type="number" id="m-armor" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.1% DR/pt</span>
+        </div>
+      </div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>🌿 Thorns</label>
+          <input type="number" id="m-thorns" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt reflect</span>
+        </div>
+        <div class="form-group">
+          <label>🛡️ Fortify</label>
+          <input type="number" id="m-fortify" value="0" min="0" max="100" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">3.75% HP shield</span>
+        </div>
+        <div class="form-group">
+          <label>💫 Second Wind</label>
+          <input type="number" id="m-secondwind" value="0" min="0" max="3" onchange="updateBuilder()">
+          <span style="font-size:0.6rem;color:var(--text-dim)">20% HP revive (max 3)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🎒</span> Equipment</div>
+    </div>
+    <div class="slot-grid" id="builder-slots"></div>
+
+    <!-- RESULTS -->
+    <div class="builder-summary" id="builder-summary"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════ GAME DATA FROM WIKI ═══════════════════
+// ═══════════════════════════════════════════════════════════
+
+const RARITIES = ['common','uncommon','rare','epic','legendary','mythical'];
+const RARITY_LABELS = {common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',mythical:'Mythical'};
+const RARITY_COLORS = {common:'var(--r-common)',uncommon:'var(--r-uncommon)',rare:'var(--r-rare)',epic:'var(--r-epic)',legendary:'var(--r-legendary)',mythical:'var(--r-mythical)'};
+const RARITY_BG = {common:'var(--r-common-bg)',uncommon:'var(--r-uncommon-bg)',rare:'var(--r-rare-bg)',epic:'var(--r-epic-bg)',legendary:'var(--r-legendary-bg)',mythical:'var(--r-mythical-bg)'};
+
+// Scrap rarity multiplier
+const RARITY_SCRAP_MULT = {common:1.0,uncommon:1.1,rare:1.3,epic:1.6,legendary:2.0,mythical:3.0};
+
+// Weapon damage multiplier
+const RARITY_DMG_MULT = {common:1.0,uncommon:1.4,rare:2.0,epic:3.5,legendary:6.0,mythical:10.0};
+
+// Token drop multiplier (weapons only)
+const RARITY_TOKEN_MULT = {common:1.00,uncommon:1.10,rare:1.25,epic:1.50,legendary:2.00,mythical:2.50};
+
+// Crit & Speed caps per rarity (weapons only)
+const CRIT_CAP = {common:10,uncommon:15,rare:25,epic:40,legendary:50,mythical:100};
+const SPEED_CAP = {common:100,uncommon:200,rare:300,epic:400,legendary:500,mythical:700};
+
+// Flat stat bonuses per equipped item rarity
+const FLAT_BONUS = {
+  common: {hp:0,dmg:0,crit:0,speed:0},
+  uncommon: {hp:10,dmg:2,crit:1,speed:-20},
+  rare: {hp:25,dmg:5,crit:2,speed:-40},
+  epic: {hp:50,dmg:10,crit:4,speed:-60},
+  legendary: {hp:100,dmg:20,crit:7,speed:-80},
+  mythical: {hp:200,dmg:40,crit:10,speed:-120}
+};
+
+// $SIEGE cost per upgrade level by rarity
+const SIEGE_COST_TABLE = {
+  common:    [5,5,10,15,15,25,25,50,50,50,50],
+  uncommon:  [10,15,25,50,50,75,75,150,150,150,150],
+  rare:      [50,50,50,100,200,250,300,350,400,1000,1000],
+  epic:      [200,200,200,400,400,1000,1250,1500,1500,1750,2500],
+  legendary: [1000,1250,1500,2500,2750,5000,7500,10000,15000,20000,30000],
+  mythical:  [5000,5000,6500,7500,12500,15000,17500,20000,25000,40000,75000]
+};
+
+// Class data
+const CLASSES = {
+  warrior: {label:'Warrior',dmgMult:1.15,hpMult:1.20,atkSpeed:1100,critBonus:0,tokenMult:1.0,scrapMult:1.0},
+  archer:  {label:'Archer', dmgMult:1.00,hpMult:0.90,atkSpeed:900, critBonus:5,tokenMult:1.0,scrapMult:1.15},
+  mage:    {label:'Mage',   dmgMult:1.00,hpMult:1.00,atkSpeed:1050,critBonus:0,tokenMult:1.2,scrapMult:1.0}
+};
+
+// Level-up auto gains
+const LEVEL_HP_BASE = 100;
+const LEVEL_HP_GROWTH = 0.08;  // +8% per level
+const LEVEL_DMG_BASE = 10;
+const LEVEL_DMG_GROWTH = 0.05; // +5% per level
+
+function getSiegeCostPerLevel(rarity, level) {
+  const tiers = SIEGE_COST_TABLE[rarity];
+  const tierIdx = Math.min(Math.floor(level / 10), tiers.length - 1);
+  return tiers[tierIdx];
+}
+
+function getScrapGrowthRate(level) {
+  if (level < 10) return 1.35;
+  if (level < 25) return 1.25;
+  if (level < 50) return 1.15;
+  return 1.08;
+}
+
+function getScrapCostForLevel(level, rarity, isEquipment) {
+  let compound = 1;
+  for (let i = 0; i < level; i++) {
+    compound *= getScrapGrowthRate(i);
+  }
+  const base = 25;
+  const rarityMult = RARITY_SCRAP_MULT[rarity];
+  const eqDiscount = isEquipment ? 0.70 : 1.0;
+  return Math.floor(base * compound * rarityMult * eqDiscount);
+}
+
+function calcUpgradeCost(rarity, isEquipment, fromLevel, toLevel) {
+  let totalScrap = 0;
+  let totalSiege = 0;
+  const details = [];
+  for (let lvl = fromLevel; lvl < toLevel; lvl++) {
+    const scrap = getScrapCostForLevel(lvl, rarity, isEquipment);
+    const siege = getSiegeCostPerLevel(rarity, lvl);
+    totalScrap += scrap;
+    totalSiege += siege;
+    details.push({ level: lvl + 1, scrap, siege, totalScrap, totalSiege });
+  }
+  return { totalScrap, totalSiege, details };
+}
+
+// ══════ STAT SCALING (iterative, matching game engine) ══════
+function scaleStatIterative(base, levels, isPercent) {
+  let val = base;
+  for (let i = 0; i < levels; i++) {
+    if (isPercent) {
+      val = Math.round(val * 1.10 * 10) / 10;
+    } else {
+      val = Math.max(Math.floor(val) + 1, Math.floor(val * 1.10));
+    }
+  }
+  return isPercent ? Math.round(val * 10) / 10 : Math.floor(val);
+}
+
+function scaleStatFromTo(stat, fromLevel, toLevel, isPercent) {
+  if (fromLevel === 0) return scaleStatIterative(stat, toLevel, isPercent);
+  const base = findBaseStat(stat, fromLevel, isPercent);
+  return scaleStatIterative(base, toLevel, isPercent);
+}
+
+function findBaseStat(target, level, isPercent) {
+  if (level === 0) return target;
+  if (!isPercent) {
+    let lo = 0, hi = target;
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      const result = scaleStatIterative(mid, level, false);
+      if (result === target) return mid;
+      if (result < target) lo = mid + 1;
+      else hi = mid - 1;
+    }
+    return lo;
+  } else {
+    let lo = 0, hi = target;
+    for (let iter = 0; iter < 100; iter++) {
+      const mid = (lo + hi) / 2;
+      const result = scaleStatIterative(mid, level, true);
+      if (Math.abs(result - target) < 0.05) return Math.round(mid * 10) / 10;
+      if (result < target) lo = mid;
+      else hi = mid;
+    }
+    return Math.round(((lo + hi) / 2) * 10) / 10;
+  }
+}
+
+function getDmgMult(rarity, level) {
+  return RARITY_DMG_MULT[rarity] * (1 + 0.05 * level);
+}
+
+// Set bonuses
+const SET_BONUSES = {
+  epic: [{count:6, dmg:3, hp:3}, {count:7, dmg:3, hp:3}],
+  legendary: [{count:4, dmg:3, hp:3}, {count:5, dmg:6, hp:6}, {count:7, dmg:8, hp:8}],
+  mythical: [{count:1, dmg:2, hp:2}, {count:2, dmg:4, hp:4}, {count:3, dmg:10, hp:10}, {count:4, dmg:15, hp:15}, {count:5, dmg:20, hp:20}, {count:7, dmg:50, hp:50}]
+};
+
+function getSetBonuses(rarityCounts) {
+  let totalDmgBonus = 0, totalHpBonus = 0;
+  const activeBonuses = [];
+  for (const rarity of ['mythical','legendary','epic']) {
+    const count = rarityCounts[rarity] || 0;
+    if (count < 1 || !SET_BONUSES[rarity]) continue;
+    const tiers = SET_BONUSES[rarity];
+    let best = null;
+    for (const tier of tiers) {
+      if (count >= tier.count) best = tier;
+    }
+    if (best) {
+      totalDmgBonus += best.dmg;
+      totalHpBonus += best.hp;
+      activeBonuses.push({rarity, count, dmg: best.dmg, hp: best.hp});
+    }
+  }
+  return {totalDmgBonus, totalHpBonus, activeBonuses};
+}
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════ UI LOGIC ═══════════════════════════════
+// ═══════════════════════════════════════════════════════════
+
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e4) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toLocaleString();
+}
+function fmtDec(n, d=1) {
+  return Number(n).toFixed(d);
+}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Toggle Crit/Speed fields based on item type (equipment has no crit/speed)
+function toggleWeaponFields(prefix) {
+  const type = document.getElementById(prefix + '-type').value;
+  const fields = document.getElementById(prefix + '-weapon-fields');
+  if (fields) fields.style.display = type === 'weapon' ? '' : 'none';
+}
+
+// ═══════════ FORWARD CALCULATOR ═══════════
+function parseNum(id) {
+  const el = document.getElementById(id);
+  const raw = el?.value?.replace(',', '.') || '0';
+  return parseFloat(raw) || 0;
+}
+
+function calcForward() {
+  const type = document.getElementById('fwd-type').value;
+  const rarity = document.getElementById('fwd-rarity').value;
+  const baseHp = parseNum('fwd-hp');
+  const baseDmg = parseNum('fwd-dmg');
+  const baseCrit = parseNum('fwd-crit');
+  const baseSpeed = parseNum('fwd-speed');
+  const fromLvl = parseInt(document.getElementById('fwd-from').value) || 0;
+  const toLvl = parseInt(document.getElementById('fwd-to').value) || 0;
+  const isWeapon = type === 'weapon';
+  const isEquip = type === 'equipment';
+
+  let finalHp = scaleStatFromTo(baseHp, fromLvl, toLvl, false);
+  let finalDmg = scaleStatFromTo(baseDmg, fromLvl, toLvl, false);
+  let finalCrit = scaleStatFromTo(baseCrit, fromLvl, toLvl, true);
+  let finalSpeed = scaleStatFromTo(baseSpeed, fromLvl, toLvl, false);
+
+  let critCap = null, speedCap = null;
+  if (isWeapon) {
+    critCap = CRIT_CAP[rarity];
+    speedCap = SPEED_CAP[rarity];
+    if (finalCrit > critCap) finalCrit = critCap;
+    if (finalSpeed > speedCap) finalSpeed = speedCap;
+  }
+
+  const dmgMultFrom = isWeapon ? getDmgMult(rarity, fromLvl) : null;
+  const dmgMultTo = isWeapon ? getDmgMult(rarity, toLvl) : null;
+  const costs = calcUpgradeCost(rarity, isEquip, fromLvl, toLvl);
+
+  const res = document.getElementById('fwd-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">📊 Stats at +${toLvl}</div>
+    ${isWeapon ? `<div class="stat-row">
+      <span class="stat-label">🗡️ DMG MULT</span>
+      <span class="stat-value">×${fmtDec(dmgMultFrom,2)} <span class="arrow">→</span> <span class="upgraded">×${fmtDec(dmgMultTo,2)}</span>
+      <span class="cap-warn">(+${fmtDec(dmgMultTo - dmgMultFrom,2)})</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">🪙 TKN Bonus</span>
+      <span class="stat-value" style="color:var(--r-legendary)">+${Math.round((RARITY_TOKEN_MULT[rarity] - 1) * 100)}%</span>
+    </div>` : ''}
+    <div class="stat-row">
+      <span class="stat-label">❤️ HP</span>
+      <span class="stat-value">${fmt(baseHp)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalHp)}</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚔️ DMG</span>
+      <span class="stat-value">${fmt(baseDmg)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalDmg)}</span></span>
+    </div>
+    ${isWeapon ? `
+    <div class="stat-row">
+      <span class="stat-label">🎯 Crit</span>
+      <span class="stat-value">${fmtDec(baseCrit)}% <span class="arrow">→</span> <span class="upgraded">${fmtDec(finalCrit)}%</span>
+      ${finalCrit >= critCap ? `<span class="cap-warn">(cap ${critCap}%)</span>` : ''}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚡ Speed</span>
+      <span class="stat-value">${fmt(baseSpeed)}ms <span class="arrow">→</span> <span class="upgraded">${fmt(finalSpeed)}ms</span>
+      ${finalSpeed >= speedCap ? `<span class="cap-warn">(cap ${speedCap}ms)</span>` : ''}</span>
+    </div>
+    ` : ''}
+    <div class="cost-summary">
+      <div class="cost-box">
+        <div class="cost-label">🔩 Scrap Metal</div>
+        <div class="cost-val" style="color:var(--r-uncommon)">${fmt(costs.totalScrap)}</div>
+      </div>
+      <div class="cost-box">
+        <div class="cost-label">💎 $SIEGE</div>
+        <div class="cost-val" style="color:var(--r-legendary)">${fmt(costs.totalSiege)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════ REVERSE CALCULATOR ═══════════
+function calcReverse() {
+  const type = document.getElementById('rev-type').value;
+  const rarity = document.getElementById('rev-rarity').value;
+  const curHp = parseNum('rev-hp');
+  const curDmg = parseNum('rev-dmg');
+  const curCrit = parseNum('rev-crit');
+  const curSpeed = parseNum('rev-speed');
+  const level = parseInt(document.getElementById('rev-level').value) || 0;
+
+  const baseHp = findBaseStat(curHp, level, false);
+  const baseDmg = findBaseStat(curDmg, level, false);
+  const baseCrit = findBaseStat(curCrit, level, true);
+  const baseSpeed = findBaseStat(curSpeed, level, false);
+
+  const verifyHp = scaleStatIterative(baseHp, level, false);
+  const verifyDmg = scaleStatIterative(baseDmg, level, false);
+
+  const res = document.getElementById('rev-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">🔍 Base Stats (before +${level})</div>
+    <div class="stat-row">
+      <span class="stat-label">❤️ Base HP</span>
+      <span class="stat-value"><span class="base-val">${baseHp}</span> <span class="arrow">→</span> ${fmt(verifyHp)} ${verifyHp !== curHp ? '<span class="cap-warn">(≈'+fmt(curHp)+')</span>' : '✓'}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚔️ Base DMG</span>
+      <span class="stat-value"><span class="base-val">${baseDmg}</span> <span class="arrow">→</span> ${fmt(verifyDmg)} ${verifyDmg !== curDmg ? '<span class="cap-warn">(≈'+fmt(curDmg)+')</span>' : '✓'}</span>
+    </div>
+    ${type === 'weapon' ? `
+    <div class="stat-row">
+      <span class="stat-label">🎯 Base Crit</span>
+      <span class="stat-value"><span class="base-val">${fmtDec(baseCrit,1)}%</span> <span class="arrow">→</span> ${fmtDec(curCrit)}%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚡ Base Speed</span>
+      <span class="stat-value"><span class="base-val">${baseSpeed}ms</span> <span class="arrow">→</span> ${fmt(curSpeed)}ms</span>
+    </div>` : ''}
+    <div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.75rem;color:var(--text-muted)">
+      💡 These are the original base stats at +0. Use them in Forward Calculator to plan upgrades.
+    </div>
+    <button class="btn btn-secondary" style="margin-top:12px" onclick="transferToForward('${type}','${rarity}',${baseHp},${baseDmg},${fmtDec(baseCrit,1)},${baseSpeed})">⚔️ Use in Forward Calculator</button>
+  `;
+}
+
+// ═══════════ COST TABLE ═══════════
+function calcCosts() {
+  const type = document.getElementById('cost-type').value;
+  const rarity = document.getElementById('cost-rarity').value;
+  const target = parseInt(document.getElementById('cost-target').value) || 50;
+  const isEquip = type === 'equipment';
+  const costs = calcUpgradeCost(rarity, isEquip, 0, target);
+
+  const milestones = [];
+  for (let i = 0; i < costs.details.length; i++) {
+    if ((i+1) % 5 === 0 || i === costs.details.length - 1 || i < 5) {
+      milestones.push(costs.details[i]);
+    }
+  }
+
+  const res = document.getElementById('cost-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">📋 Cost: +0 → +${target} (${RARITY_LABELS[rarity]} ${isEquip ? 'Equipment' : 'Weapon'})</div>
+    <div style="overflow-x:auto">
+    <table class="cost-table">
+      <thead><tr>
+        <th>Level</th>
+        <th>Scrap/lvl</th>
+        <th>$SIEGE/lvl</th>
+        <th>Total Scrap</th>
+        <th>Total $SIEGE</th>
+      </tr></thead>
+      <tbody>
+        ${milestones.map(d => `<tr>
+          <td style="color:var(--gold)">+${d.level}</td>
+          <td>${fmt(d.scrap)}</td>
+          <td>${fmt(d.siege)}</td>
+          <td style="color:var(--r-uncommon)">${fmt(d.totalScrap)}</td>
+          <td style="color:var(--r-legendary)">${fmt(d.totalSiege)}</td>
+        </tr>`).join('')}
+        <tr class="total-row">
+          <td>TOTAL</td>
+          <td></td>
+          <td></td>
+          <td>${fmt(costs.totalScrap)}</td>
+          <td>${fmt(costs.totalSiege)}</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    ${target > 100 ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:0.75rem;color:var(--danger)">
+      ⚠️ Levels above +100 have a <strong>50% burn chance</strong> per upgrade. Use Upgrade Scrolls (100K $SIEGE each) to protect your items.
+    </div>` : ''}
+  `;
+}
+
+// ═══════════ TRANSFER TO FORWARD ═══════════
+function transferToForward(type, rarity, hp, dmg, crit, speed) {
+  document.getElementById('fwd-type').value = type;
+  const rarSel = document.getElementById('fwd-rarity');
+  rarSel.value = rarity;
+  rarSel.dataset.rarity = rarity;
+  document.getElementById('fwd-hp').value = hp;
+  document.getElementById('fwd-dmg').value = dmg;
+  document.getElementById('fwd-crit').value = crit;
+  document.getElementById('fwd-speed').value = speed;
+  document.getElementById('fwd-from').value = 0;
+  toggleWeaponFields('fwd');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('[data-tab="forward"]').classList.add('active');
+  document.getElementById('tab-forward').classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════ CHARACTER BUILDER ═══════════════════
+// ═══════════════════════════════════════════════════════════
+
+const SLOTS = [
+  {id:'weapon', label:'Weapon', icon:'⚔️', isWeapon:true},
+  {id:'helmet', label:'Helmet', icon:'🪖', isWeapon:false},
+  {id:'armor',  label:'Armor',  icon:'🛡️', isWeapon:false},
+  {id:'boots',  label:'Boots',  icon:'👢', isWeapon:false},
+  {id:'shield', label:'Shield', icon:'🔰', isWeapon:false},
+  {id:'accessory1', label:'Accessory 1', icon:'💍', isWeapon:false},
+  {id:'accessory2', label:'Accessory 2', icon:'💍', isWeapon:false},
+];
+
+function initBuilder() {
+  const grid = document.getElementById('builder-slots');
+  grid.innerHTML = SLOTS.map(slot => `
+    <div class="slot-card" id="slot-${slot.id}">
+      <div class="slot-header">${slot.icon} ${slot.label}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rarity</label>
+          <select id="b-${slot.id}-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value;updateBuilder()">
+            ${RARITIES.map(r => `<option value="${r}" ${r==='epic'?'selected':''}>${RARITY_LABELS[r]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Level</label>
+          <input type="number" id="b-${slot.id}-level" value="30" min="0" max="200" onchange="updateBuilder()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>HP</label><input type="number" id="b-${slot.id}-hp" value="${slot.isWeapon?'20':'40'}" min="0" onchange="updateBuilder()"></div>
+        <div class="form-group"><label>DMG</label><input type="number" id="b-${slot.id}-dmg" value="${slot.isWeapon?'8':'2'}" min="0" onchange="updateBuilder()"></div>
+      </div>
+      ${slot.isWeapon ? `
+      <div class="form-row">
+        <div class="form-group"><label>Crit %</label><input type="number" id="b-${slot.id}-crit" value="2" min="0" step="0.1" onchange="updateBuilder()"></div>
+        <div class="form-group"><label>Speed (ms)</label><input type="number" id="b-${slot.id}-speed" value="25" min="0" onchange="updateBuilder()"></div>
+      </div>` : ''}
+    </div>
+  `).join('');
+  document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+  updateBuilder();
+}
+
+function updateBuilder() {
+  // ─── Character base stats ───
+  const charLevel = parseInt(document.getElementById('b-level')?.value) || 1;
+  const charClass = document.getElementById('b-class')?.value || 'warrior';
+  const cls = CLASSES[charClass];
+
+  // Skill points (1 per level, level 1 = 0 points)
+  const totalSP = Math.max(0, charLevel - 1);
+  const spDmg = Math.min(parseInt(document.getElementById('sp-dmg')?.value) || 0, totalSP);
+  const spCrit = parseInt(document.getElementById('sp-crit')?.value) || 0;
+  const spSpeed = parseInt(document.getElementById('sp-speed')?.value) || 0;
+  const spHp = parseInt(document.getElementById('sp-hp')?.value) || 0;
+  const spToken = parseInt(document.getElementById('sp-token')?.value) || 0;
+  const usedSP = spDmg + spCrit + spSpeed + spHp + spToken;
+
+  // Update SP display
+  const spInfo = document.getElementById('b-sp-info');
+  const spCounter = document.getElementById('sp-counter');
+  if (spInfo) spInfo.textContent = totalSP;
+  if (spCounter) {
+    spCounter.textContent = `${usedSP} / ${totalSP}`;
+    spCounter.style.color = usedSP > totalSP ? 'var(--danger)' : usedSP === totalSP ? 'var(--success)' : 'var(--gold)';
+  }
+
+  // Mastery
+  const mLifesteal = parseFloat(document.getElementById('m-lifesteal')?.value) || 0;
+  const mDoubleStrike = parseFloat(document.getElementById('m-doublestrike')?.value) || 0;
+  const mArmorPen = parseFloat(document.getElementById('m-armorpen')?.value) || 0;
+  const mBossSlayer = parseFloat(document.getElementById('m-bossslayer')?.value) || 0;
+  const mFinisher = parseFloat(document.getElementById('m-finisher')?.value) || 0;
+  const mArmor = parseFloat(document.getElementById('m-armor')?.value) || 0;
+  const mThorns = parseFloat(document.getElementById('m-thorns')?.value) || 0;
+  const mFortify = parseFloat(document.getElementById('m-fortify')?.value) || 0;
+  const mSecondWind = parseInt(document.getElementById('m-secondwind')?.value) || 0;
+
+  // ─── Character base from leveling ───
+  // HP = base × (1 + growth × level) × classMult
+  const charBaseHp = LEVEL_HP_BASE * (1 + LEVEL_HP_GROWTH * charLevel) * cls.hpMult;
+  // DMG = base × (1 + growth × level) × classMult
+  const charBaseDmg = LEVEL_DMG_BASE * (1 + LEVEL_DMG_GROWTH * charLevel) * cls.dmgMult;
+
+  // ─── Equipment stats ───
+  let equipHp = 0, equipDmg = 0, equipCrit = 0, equipSpeed = 0;
+  let totalScrap = 0, totalSiege = 0;
+  const rarityCounts = {};
+  let weaponRarity = 'common';
+  let weaponUpgradeLevel = 0;
+
+  SLOTS.forEach(slot => {
+    const rarity = document.getElementById(`b-${slot.id}-rarity`)?.value || 'epic';
+    const level = parseInt(document.getElementById(`b-${slot.id}-level`)?.value) || 0;
+    const baseHp = parseFloat(document.getElementById(`b-${slot.id}-hp`)?.value) || 0;
+    const baseDmg = parseFloat(document.getElementById(`b-${slot.id}-dmg`)?.value) || 0;
+
+    rarityCounts[rarity] = (rarityCounts[rarity] || 0) + 1;
+
+    let hp = scaleStatIterative(baseHp, level, false);
+    let dmg = scaleStatIterative(baseDmg, level, false);
+    equipHp += hp;
+    equipDmg += dmg;
+
+    if (slot.isWeapon) {
+      weaponRarity = rarity;
+      weaponUpgradeLevel = level;
+      const baseCrit = parseFloat(document.getElementById(`b-${slot.id}-crit`)?.value) || 0;
+      const baseSpeed = parseFloat(document.getElementById(`b-${slot.id}-speed`)?.value) || 0;
+      let crit = scaleStatIterative(baseCrit, level, true);
+      let speed = scaleStatIterative(baseSpeed, level, false);
+      if (crit > CRIT_CAP[rarity]) crit = CRIT_CAP[rarity];
+      if (speed > SPEED_CAP[rarity]) speed = SPEED_CAP[rarity];
+      equipCrit += crit;
+      equipSpeed += speed;
+    }
+
+    const flat = FLAT_BONUS[rarity];
+    equipHp += flat.hp;
+    equipDmg += flat.dmg;
+    equipCrit += flat.crit;
+    equipSpeed += flat.speed;
+
+    const costs = calcUpgradeCost(rarity, !slot.isWeapon, 0, level);
+    totalScrap += costs.totalScrap;
+    totalSiege += costs.totalSiege;
+  });
+
+  // ─── Set bonuses ───
+  const {totalDmgBonus, totalHpBonus, activeBonuses} = getSetBonuses(rarityCounts);
+
+  // ─── TOTAL STAT CALCULATIONS ───
+
+  // Stat point multipliers
+  const statDmgMult = 1 + spDmg * 0.05;      // +5% per point to total DMG
+  const statFlatDmgMult = 1 + spDmg * 0.025;  // +2.5% per point to item flat DMG
+  const statHpMult = 1 + spHp * 0.01;          // +1% per point to total HP
+  const statCritAdd = spCrit * 1;               // +1% crit per point
+  const statSpeedReduce = spSpeed * 10;         // -10ms per point
+
+  // Weapon rarity DMG multiplier (includes upgrade scaling)
+  const weaponDmgMult = getDmgMult(weaponRarity, weaponUpgradeLevel);
+  const raritySqrtMult = Math.sqrt(RARITY_DMG_MULT[weaponRarity]);
+
+  // Total Damage = (charBaseDmg × statDmgMult × weaponDmgMult) + (equipDmg × statFlatDmgMult × raritySqrtMult)
+  const totalDmgRaw = (charBaseDmg * statDmgMult * weaponDmgMult) + (equipDmg * statFlatDmgMult * raritySqrtMult);
+  const totalDmg = totalDmgRaw * (1 + totalDmgBonus / 100);
+
+  // Total HP = (charBaseHp + equipHp) × statHpMult × (1 + set%)
+  const totalHpRaw = (charBaseHp + equipHp) * statHpMult;
+  const totalHp = totalHpRaw * (1 + totalHpBonus / 100);
+
+  // Crit = weapon crit + class crit + skill crit (cap 95%)
+  const totalCrit = Math.min(95, equipCrit + cls.critBonus + statCritAdd);
+
+  // Attack speed = class base - weapon speed bonus - skill speed
+  const totalAtkSpeed = Math.max(400, cls.atkSpeed - equipSpeed - statSpeedReduce);
+
+  // DPS = totalDmg × (1 + crit/100) × (1000/atkSpeed) × (1 + doubleStrike%)
+  const critMultiplier = 1 + totalCrit / 100; // simplified: crit does 2x, so avg = 1 + crit%
+  const attacksPerSec = 1000 / totalAtkSpeed;
+  const doubleStrikeMult = 1 + mDoubleStrike * 0.005;
+  const dps = totalDmg * critMultiplier * attacksPerSec * doubleStrikeMult;
+
+  // Survivability
+  const damageReduction = Math.min(75, mArmor * 0.1); // cap at 75%
+  const fortifyShield = totalHp * mFortify * 0.0375;
+  const effectiveHp = (totalHp + fortifyShield) / (1 - damageReduction / 100);
+  const lifestealPerSec = dps * mLifesteal * 0.0025;
+
+  // ─── RENDER ───
+  const summary = document.getElementById('builder-summary');
+  summary.innerHTML = `
+    <div class="results-title" style="margin-bottom:16px">📊 ${cls.label} — Level ${charLevel}</div>
+
+    <!-- COMBAT STATS -->
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">⚔️ Combat</div>
+    <div class="summary-grid" style="margin-bottom:16px">
+      <div class="summary-stat">
+        <div class="s-label">💥 DPS</div>
+        <div class="s-value" style="color:var(--danger)">${fmt(dps)}</div>
+        <div class="s-detail">${fmtDec(attacksPerSec,2)} atk/s</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">⚔️ DMG/Hit</div>
+        <div class="s-value" style="color:var(--r-mythical)">${fmt(totalDmg)}</div>
+        <div class="s-detail">×${fmtDec(weaponDmgMult,2)} mult</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">🎯 Crit</div>
+        <div class="s-value" style="color:var(--r-epic)">${fmtDec(totalCrit)}%</div>
+        <div class="s-detail">${totalCrit >= 95 ? 'CAPPED' : ''}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">⚡ Atk Speed</div>
+        <div class="s-value" style="color:var(--r-uncommon)">${totalAtkSpeed}ms</div>
+        <div class="s-detail">${totalAtkSpeed <= 400 ? 'MIN' : ''}</div>
+      </div>
+    </div>
+
+    <!-- SURVIVAL STATS -->
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">🛡️ Survival</div>
+    <div class="summary-grid" style="margin-bottom:16px">
+      <div class="summary-stat">
+        <div class="s-label">❤️ Total HP</div>
+        <div class="s-value" style="color:var(--r-rare)">${fmt(totalHp)}</div>
+        <div class="s-detail">${fmt(charBaseHp)} char + ${fmt(equipHp)} eq</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">🛡️ eHP</div>
+        <div class="s-value" style="color:var(--r-legendary)">${fmt(effectiveHp)}</div>
+        <div class="s-detail">${fmtDec(damageReduction)}% DR${fortifyShield > 0 ? ` +${fmt(fortifyShield)} shield` : ''}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">💚 Lifesteal</div>
+        <div class="s-value" style="color:var(--success)">${fmt(lifestealPerSec)}/s</div>
+        <div class="s-detail">${fmtDec(mLifesteal * 0.25)}%</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">💫 Second Wind</div>
+        <div class="s-value" style="color:var(--r-epic)">${mSecondWind}x</div>
+        <div class="s-detail">${mSecondWind > 0 ? `${mSecondWind}×${Math.round(totalHp*0.2)} HP` : 'none'}</div>
+      </div>
+    </div>
+
+    <!-- MASTERY BONUSES -->${mDoubleStrike + mArmorPen + mBossSlayer + mFinisher + mThorns > 0 ? `
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">🌟 Mastery Effects</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      ${mDoubleStrike > 0 ? `<span class="set-bonus-tag" style="background:var(--r-epic-bg);color:var(--r-epic)">Double Strike ${fmtDec(mDoubleStrike*0.5)}%</span>` : ''}
+      ${mArmorPen > 0 ? `<span class="set-bonus-tag" style="background:var(--r-mythical-bg);color:var(--r-mythical)">Armor Pen ${fmtDec(mArmorPen*0.75)}%</span>` : ''}
+      ${mBossSlayer > 0 ? `<span class="set-bonus-tag" style="background:var(--r-legendary-bg);color:var(--r-legendary)">Boss Slayer ${fmtDec(mBossSlayer*0.1)}%</span>` : ''}
+      ${mFinisher > 0 ? `<span class="set-bonus-tag" style="background:var(--r-rare-bg);color:var(--r-rare)">Finisher ${fmtDec(mFinisher*0.2)}%</span>` : ''}
+      ${mThorns > 0 ? `<span class="set-bonus-tag" style="background:var(--r-uncommon-bg);color:var(--r-uncommon)">Thorns ${fmtDec(mThorns*0.25)}%</span>` : ''}
+    </div>` : ''}
+
+    <!-- SET BONUSES -->
+    ${activeBonuses.length > 0 ? `
+    <div class="set-bonuses">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:6px">🎴 Set Bonuses</div>
+      ${activeBonuses.map(b => `
+        <span class="set-bonus-tag" style="background:${RARITY_BG[b.rarity]};color:${RARITY_COLORS[b.rarity]}">
+          ${RARITY_LABELS[b.rarity]} ${b.count}pc: +${b.dmg}% DMG & HP
+        </span>
+      `).join('')}
+    </div>` : ''}
+
+    <!-- COSTS -->
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:16px 0 8px">💰 Equipment Upgrade Cost</div>
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="s-label">🔩 Scrap</div>
+        <div class="s-value" style="color:var(--r-uncommon)">${fmt(totalScrap)}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">💎 $SIEGE</div>
+        <div class="s-value" style="color:var(--r-legendary)">${fmt(totalSiege)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════ INIT ═══════════
+initBuilder();
+document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+</script>
+</body>
+</html>
+
+  <div class="tab-content" id="tab-builder">
+    <div class="card">
+      <div class="card-title"><span class="icon">🛡️</span> Equipment Set Builder</div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Configure all 7 equipment slots. Stats, costs, and set bonuses are calculated automatically.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Character Level</label>
+          <input type="number" id="builder-char-level" value="1" min="1" max="100" onchange="updateBuilder()">
+        </div>
+        <div class="form-group">
+          <label>Mastery Level</label>
+          <input type="number" id="builder-mastery-level" value="0" min="0" max="100" onchange="updateBuilder()">
+        </div>
+      </div>
+      <p style="font-size:0.65rem;color:var(--text-dim);margin-top:-8px;">⚠️ Character & Mastery bonuses require wiki data (save Leveling & Mastery pages as HTML for Phase 2)</p>
+    </div>
+    <div class="slot-grid" id="builder-slots"></div>
+    <div class="builder-summary" id="builder-summary"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════ GAME DATA FROM WIKI ═══════════════════
+// ═══════════════════════════════════════════════════════════
+
+const RARITIES = ['common','uncommon','rare','epic','legendary','mythical'];
+const RARITY_LABELS = {common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',mythical:'Mythical'};
+const RARITY_COLORS = {common:'var(--r-common)',uncommon:'var(--r-uncommon)',rare:'var(--r-rare)',epic:'var(--r-epic)',legendary:'var(--r-legendary)',mythical:'var(--r-mythical)'};
+const RARITY_BG = {common:'var(--r-common-bg)',uncommon:'var(--r-uncommon-bg)',rare:'var(--r-rare-bg)',epic:'var(--r-epic-bg)',legendary:'var(--r-legendary-bg)',mythical:'var(--r-mythical-bg)'};
+
+// Scrap rarity multiplier
+const RARITY_SCRAP_MULT = {common:1.0,uncommon:1.1,rare:1.3,epic:1.6,legendary:2.0,mythical:3.0};
+
+// Weapon damage multiplier
+const RARITY_DMG_MULT = {common:1.0,uncommon:1.4,rare:2.0,epic:3.5,legendary:6.0,mythical:10.0};
+
+// Token drop multiplier (weapons only)
+const RARITY_TOKEN_MULT = {common:1.00,uncommon:1.10,rare:1.25,epic:1.50,legendary:2.00,mythical:2.50};
+
+// Crit & Speed caps per rarity (weapons only)
+const CRIT_CAP = {common:10,uncommon:15,rare:25,epic:40,legendary:50,mythical:100};
+const SPEED_CAP = {common:100,uncommon:200,rare:300,epic:400,legendary:500,mythical:700};
+
+// Flat stat bonuses per equipped item rarity
+const FLAT_BONUS = {
+  common: {hp:0,dmg:0,crit:0,speed:0},
+  uncommon: {hp:10,dmg:2,crit:1,speed:-20},
+  rare: {hp:25,dmg:5,crit:2,speed:-40},
+  epic: {hp:50,dmg:10,crit:4,speed:-60},
+  legendary: {hp:100,dmg:20,crit:7,speed:-80},
+  mythical: {hp:200,dmg:40,crit:10,speed:-120}
+};
+
+// $SIEGE cost per upgrade level by rarity
+const SIEGE_COST_TABLE = {
+  common:    [5,5,10,15,15,25,25,50,50,50,50],
+  uncommon:  [10,15,25,50,50,75,75,150,150,150,150],
+  rare:      [50,50,50,100,200,250,300,350,400,1000,1000],
+  epic:      [200,200,200,400,400,1000,1250,1500,1500,1750,2500],
+  legendary: [1000,1250,1500,2500,2750,5000,7500,10000,15000,20000,30000],
+  mythical:  [5000,5000,6500,7500,12500,15000,17500,20000,25000,40000,75000]
+};
+
+function getSiegeCostPerLevel(rarity, level) {
+  const tiers = SIEGE_COST_TABLE[rarity];
+  const tierIdx = Math.min(Math.floor(level / 10), tiers.length - 1);
+  return tiers[tierIdx];
+}
+
+// Scrap growth rate per level tier
+function getScrapGrowthRate(level) {
+  if (level < 10) return 1.35;
+  if (level < 25) return 1.25;
+  if (level < 50) return 1.15;
+  return 1.08;
+}
+
+// Calculate scrap cost for a single level upgrade
+function getScrapCostForLevel(level, rarity, isEquipment) {
+  let compound = 1;
+  for (let i = 0; i < level; i++) {
+    compound *= getScrapGrowthRate(i);
+  }
+  const base = 25;
+  const rarityMult = RARITY_SCRAP_MULT[rarity];
+  const eqDiscount = isEquipment ? 0.70 : 1.0;
+  return Math.floor(base * compound * rarityMult * eqDiscount);
+}
+
+// Calculate total upgrade cost from levelFrom to levelTo
+function calcUpgradeCost(rarity, isEquipment, fromLevel, toLevel) {
+  let totalScrap = 0;
+  let totalSiege = 0;
+  const details = [];
+  for (let lvl = fromLevel; lvl < toLevel; lvl++) {
+    const scrap = getScrapCostForLevel(lvl, rarity, isEquipment);
+    const siege = getSiegeCostPerLevel(rarity, lvl);
+    totalScrap += scrap;
+    totalSiege += siege;
+    details.push({ level: lvl + 1, scrap, siege, totalScrap, totalSiege });
+  }
+  return { totalScrap, totalSiege, details };
+}
+
+// ══════ STAT SCALING (iterative, matching game engine) ══════
+// Game applies floor/round EACH level — not base × 1.10^N directly!
+// Integer stats (HP, DMG, Speed): max(prev + 1, floor(prev × 1.10))
+// Percent stats (Crit%): round(prev × 1.10, 1 decimal place)
+
+function scaleStatIterative(base, levels, isPercent) {
+  let val = base;
+  for (let i = 0; i < levels; i++) {
+    if (isPercent) {
+      val = Math.round(val * 1.10 * 10) / 10;
+    } else {
+      val = Math.max(Math.floor(val) + 1, Math.floor(val * 1.10));
+    }
+  }
+  return isPercent ? Math.round(val * 10) / 10 : Math.floor(val);
+}
+
+// Scale stat from one level to another (reverse to base first if needed)
+function scaleStatFromTo(stat, fromLevel, toLevel, isPercent) {
+  if (fromLevel === 0) return scaleStatIterative(stat, toLevel, isPercent);
+  // Find base via binary search, then forward-compute to target
+  const base = findBaseStat(stat, fromLevel, isPercent);
+  return scaleStatIterative(base, toLevel, isPercent);
+}
+
+// Binary search to find base stat that produces target at given level
+function findBaseStat(target, level, isPercent) {
+  if (level === 0) return target;
+  // For integer stats, try every candidate from 0 to target
+  if (!isPercent) {
+    let lo = 0, hi = target;
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      const result = scaleStatIterative(mid, level, false);
+      if (result === target) return mid;
+      if (result < target) lo = mid + 1;
+      else hi = mid - 1;
+    }
+    return lo; // closest
+  } else {
+    // For percent stats, use float binary search
+    let lo = 0, hi = target;
+    for (let iter = 0; iter < 100; iter++) {
+      const mid = (lo + hi) / 2;
+      const result = scaleStatIterative(mid, level, true);
+      if (Math.abs(result - target) < 0.05) return Math.round(mid * 10) / 10;
+      if (result < target) lo = mid;
+      else hi = mid;
+    }
+    return Math.round(((lo + hi) / 2) * 10) / 10;
+  }
+}
+
+// DMG MULT scaling: rarity_mult × (1 + 0.05 × level)
+function getDmgMult(rarity, level) {
+  return RARITY_DMG_MULT[rarity] * (1 + 0.05 * level);
+}
+
+// Set bonuses
+const SET_BONUSES = {
+  epic: [{count:6, dmg:3, hp:3}, {count:7, dmg:3, hp:3}],
+  legendary: [{count:4, dmg:3, hp:3}, {count:5, dmg:6, hp:6}, {count:7, dmg:8, hp:8}],
+  mythical: [{count:1, dmg:2, hp:2}, {count:2, dmg:4, hp:4}, {count:3, dmg:10, hp:10}, {count:4, dmg:15, hp:15}, {count:5, dmg:20, hp:20}, {count:7, dmg:50, hp:50}]
+};
+
+function getSetBonuses(rarityCounts) {
+  let totalDmgBonus = 0, totalHpBonus = 0;
+  const activeBonuses = [];
+  for (const rarity of ['mythical','legendary','epic']) {
+    const count = rarityCounts[rarity] || 0;
+    if (count < 1 || !SET_BONUSES[rarity]) continue;
+    const tiers = SET_BONUSES[rarity];
+    let best = null;
+    for (const tier of tiers) {
+      if (count >= tier.count) best = tier;
+    }
+    if (best) {
+      totalDmgBonus += best.dmg;
+      totalHpBonus += best.hp;
+      activeBonuses.push({rarity, count, dmg: best.dmg, hp: best.hp});
+    }
+  }
+  return {totalDmgBonus, totalHpBonus, activeBonuses};
+}
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════ UI LOGIC ═══════════════════════════════
+// ═══════════════════════════════════════════════════════════
+
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e4) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toLocaleString();
+}
+function fmtDec(n, d=1) {
+  return Number(n).toFixed(d);
+}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Toggle Crit/Speed fields based on item type (equipment has no crit/speed)
+function toggleWeaponFields(prefix) {
+  const type = document.getElementById(prefix + '-type').value;
+  const fields = document.getElementById(prefix + '-weapon-fields');
+  if (fields) fields.style.display = type === 'weapon' ? '' : 'none';
+}
+
+// ═══════════ FORWARD CALCULATOR ═══════════
+function parseNum(id) {
+  // Handle comma as decimal separator (European locale)
+  const el = document.getElementById(id);
+  const raw = el?.value?.replace(',', '.') || '0';
+  return parseFloat(raw) || 0;
+}
+
+function calcForward() {
+  const type = document.getElementById('fwd-type').value;
+  const rarity = document.getElementById('fwd-rarity').value;
+  const baseHp = parseNum('fwd-hp');
+  const baseDmg = parseNum('fwd-dmg');
+  const baseCrit = parseNum('fwd-crit');
+  const baseSpeed = parseNum('fwd-speed');
+  const fromLvl = parseInt(document.getElementById('fwd-from').value) || 0;
+  const toLvl = parseInt(document.getElementById('fwd-to').value) || 0;
+  const isWeapon = type === 'weapon';
+  const isEquip = type === 'equipment';
+
+  // Scale stats using iterative per-level formula
+  let finalHp = scaleStatFromTo(baseHp, fromLvl, toLvl, false);
+  let finalDmg = scaleStatFromTo(baseDmg, fromLvl, toLvl, false);
+  let finalCrit = scaleStatFromTo(baseCrit, fromLvl, toLvl, true);
+  let finalSpeed = scaleStatFromTo(baseSpeed, fromLvl, toLvl, false);
+
+  // Apply caps for weapons
+  let critCap = null, speedCap = null;
+  if (isWeapon) {
+    critCap = CRIT_CAP[rarity];
+    speedCap = SPEED_CAP[rarity];
+    if (finalCrit > critCap) finalCrit = critCap;
+    if (finalSpeed > speedCap) finalSpeed = speedCap;
+  }
+
+  // DMG MULT info (weapons only)
+  const dmgMultFrom = isWeapon ? getDmgMult(rarity, fromLvl) : null;
+  const dmgMultTo = isWeapon ? getDmgMult(rarity, toLvl) : null;
+
+  // Costs
+  const costs = calcUpgradeCost(rarity, isEquip, fromLvl, toLvl);
+
+  const res = document.getElementById('fwd-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">📊 Stats at +${toLvl}</div>
+    ${isWeapon ? `<div class="stat-row">
+      <span class="stat-label">🗡️ DMG MULT</span>
+      <span class="stat-value">×${fmtDec(dmgMultFrom,2)} <span class="arrow">→</span> <span class="upgraded">×${fmtDec(dmgMultTo,2)}</span>
+      <span class="cap-warn">(+${fmtDec(dmgMultTo - dmgMultFrom,2)})</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">🪙 TKN Bonus</span>
+      <span class="stat-value" style="color:var(--r-legendary)">+${Math.round((RARITY_TOKEN_MULT[rarity] - 1) * 100)}%</span>
+    </div>` : ''}
+    <div class="stat-row">
+      <span class="stat-label">❤️ HP</span>
+      <span class="stat-value">${fmt(baseHp)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalHp)}</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚔️ DMG</span>
+      <span class="stat-value">${fmt(baseDmg)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalDmg)}</span></span>
+    </div>
+    ${isWeapon ? `
+    <div class="stat-row">
+      <span class="stat-label">🎯 Crit</span>
+      <span class="stat-value">${fmtDec(baseCrit)}% <span class="arrow">→</span> <span class="upgraded">${fmtDec(finalCrit)}%</span>
+      ${finalCrit >= critCap ? `<span class="cap-warn">(cap ${critCap}%)</span>` : ''}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚡ Speed</span>
+      <span class="stat-value">${fmt(baseSpeed)}ms <span class="arrow">→</span> <span class="upgraded">${fmt(finalSpeed)}ms</span>
+      ${finalSpeed >= speedCap ? `<span class="cap-warn">(cap ${speedCap}ms)</span>` : ''}</span>
+    </div>
+    ` : ''}
+    <div class="cost-summary">
+      <div class="cost-box">
+        <div class="cost-label">🔩 Scrap Metal</div>
+        <div class="cost-val" style="color:var(--r-uncommon)">${fmt(costs.totalScrap)}</div>
+      </div>
+      <div class="cost-box">
+        <div class="cost-label">💎 $SIEGE</div>
+        <div class="cost-val" style="color:var(--r-legendary)">${fmt(costs.totalSiege)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════ REVERSE CALCULATOR ═══════════
+function calcReverse() {
+  const type = document.getElementById('rev-type').value;
+  const rarity = document.getElementById('rev-rarity').value;
+  const curHp = parseNum('rev-hp');
+  const curDmg = parseNum('rev-dmg');
+  const curCrit = parseNum('rev-crit');
+  const curSpeed = parseNum('rev-speed');
+  const level = parseInt(document.getElementById('rev-level').value) || 0;
+
+  // Find base stats via binary search (accounts for per-level rounding)
+  const baseHp = findBaseStat(curHp, level, false);
+  const baseDmg = findBaseStat(curDmg, level, false);
+  const baseCrit = findBaseStat(curCrit, level, true);
+  const baseSpeed = findBaseStat(curSpeed, level, false);
+
+  // Verify by forward-computing
+  const verifyHp = scaleStatIterative(baseHp, level, false);
+  const verifyDmg = scaleStatIterative(baseDmg, level, false);
+
+  const res = document.getElementById('rev-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">🔍 Base Stats (before +${level})</div>
+    <div class="stat-row">
+      <span class="stat-label">❤️ Base HP</span>
+      <span class="stat-value"><span class="base-val">${baseHp}</span> <span class="arrow">→</span> ${fmt(verifyHp)} ${verifyHp !== curHp ? '<span class="cap-warn">(≈'+fmt(curHp)+')</span>' : '✓'}</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚔️ Base DMG</span>
+      <span class="stat-value"><span class="base-val">${baseDmg}</span> <span class="arrow">→</span> ${fmt(verifyDmg)} ${verifyDmg !== curDmg ? '<span class="cap-warn">(≈'+fmt(curDmg)+')</span>' : '✓'}</span>
+    </div>
+    ${type === 'weapon' ? `
+    <div class="stat-row">
+      <span class="stat-label">🎯 Base Crit</span>
+      <span class="stat-value"><span class="base-val">${fmtDec(baseCrit,1)}%</span> <span class="arrow">→</span> ${fmtDec(curCrit)}%</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">⚡ Base Speed</span>
+      <span class="stat-value"><span class="base-val">${baseSpeed}ms</span> <span class="arrow">→</span> ${fmt(curSpeed)}ms</span>
+    </div>` : ''}
+    <div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.75rem;color:var(--text-muted)">
+      💡 These are the original base stats at +0. Use them in Forward Calculator to plan upgrades.
+    </div>
+    <button class="btn btn-secondary" style="margin-top:12px" onclick="transferToForward('${type}','${rarity}',${baseHp},${baseDmg},${fmtDec(baseCrit,1)},${baseSpeed})">⚔️ Use in Forward Calculator</button>
+  `;
+}
+
+// ═══════════ COST TABLE ═══════════
+function calcCosts() {
+  const type = document.getElementById('cost-type').value;
+  const rarity = document.getElementById('cost-rarity').value;
+  const target = parseInt(document.getElementById('cost-target').value) || 50;
+  const isEquip = type === 'equipment';
+  const costs = calcUpgradeCost(rarity, isEquip, 0, target);
+
+  // Show every 5th level + last
+  const milestones = [];
+  for (let i = 0; i < costs.details.length; i++) {
+    if ((i+1) % 5 === 0 || i === costs.details.length - 1 || i < 5) {
+      milestones.push(costs.details[i]);
+    }
+  }
+
+  const res = document.getElementById('cost-results');
+  res.classList.remove('hidden');
+  res.innerHTML = `
+    <div class="results-title">📋 Cost: +0 → +${target} (${RARITY_LABELS[rarity]} ${isEquip ? 'Equipment' : 'Weapon'})</div>
+    <div style="overflow-x:auto">
+    <table class="cost-table">
+      <thead><tr>
+        <th>Level</th>
+        <th>Scrap/lvl</th>
+        <th>$SIEGE/lvl</th>
+        <th>Total Scrap</th>
+        <th>Total $SIEGE</th>
+      </tr></thead>
+      <tbody>
+        ${milestones.map(d => `<tr>
+          <td style="color:var(--gold)">+${d.level}</td>
+          <td>${fmt(d.scrap)}</td>
+          <td>${fmt(d.siege)}</td>
+          <td style="color:var(--r-uncommon)">${fmt(d.totalScrap)}</td>
+          <td style="color:var(--r-legendary)">${fmt(d.totalSiege)}</td>
+        </tr>`).join('')}
+        <tr class="total-row">
+          <td>TOTAL</td>
+          <td></td>
+          <td></td>
+          <td>${fmt(costs.totalScrap)}</td>
+          <td>${fmt(costs.totalSiege)}</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    ${target > 100 ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:0.75rem;color:var(--danger)">
+      ⚠️ Levels above +100 have a <strong>50% burn chance</strong> per upgrade. Use Upgrade Scrolls (100K $SIEGE each) to protect your items.
+    </div>` : ''}
+  `;
+}
+
+// ═══════════ TRANSFER TO FORWARD ═══════════
+function transferToForward(type, rarity, hp, dmg, crit, speed) {
+  document.getElementById('fwd-type').value = type;
+  const rarSel = document.getElementById('fwd-rarity');
+  rarSel.value = rarity;
+  rarSel.dataset.rarity = rarity;
+  document.getElementById('fwd-hp').value = hp;
+  document.getElementById('fwd-dmg').value = dmg;
+  document.getElementById('fwd-crit').value = crit;
+  document.getElementById('fwd-speed').value = speed;
+  document.getElementById('fwd-from').value = 0;
+  // Switch to forward tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('[data-tab="forward"]').classList.add('active');
+  document.getElementById('tab-forward').classList.add('active');
+  // Scroll to top
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ═══════════ EQUIPMENT BUILDER ═══════════
+const SLOTS = [
+  {id:'weapon', label:'Weapon', icon:'⚔️', isWeapon:true},
+  {id:'helmet', label:'Helmet', icon:'🪖', isWeapon:false},
+  {id:'armor',  label:'Armor',  icon:'🛡️', isWeapon:false},
+  {id:'boots',  label:'Boots',  icon:'👢', isWeapon:false},
+  {id:'shield', label:'Shield', icon:'🔰', isWeapon:false},
+  {id:'accessory1', label:'Accessory 1', icon:'💍', isWeapon:false},
+  {id:'accessory2', label:'Accessory 2', icon:'💍', isWeapon:false},
+];
+
+function initBuilder() {
+  const grid = document.getElementById('builder-slots');
+  grid.innerHTML = SLOTS.map(slot => `
+    <div class="slot-card" id="slot-${slot.id}">
+      <div class="slot-header">${slot.icon} ${slot.label}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rarity</label>
+          <select id="b-${slot.id}-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value;updateBuilder()">
+            ${RARITIES.map(r => `<option value="${r}" ${r==='epic'?'selected':''}>${RARITY_LABELS[r]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Level</label>
+          <input type="number" id="b-${slot.id}-level" value="30" min="0" max="200" onchange="updateBuilder()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Base HP</label><input type="number" id="b-${slot.id}-hp" value="${slot.isWeapon?'20':'40'}" min="0" onchange="updateBuilder()"></div>
+        <div class="form-group"><label>Base DMG</label><input type="number" id="b-${slot.id}-dmg" value="${slot.isWeapon?'8':'2'}" min="0" onchange="updateBuilder()"></div>
+      </div>
+      ${slot.isWeapon ? `
+      <div class="form-row">
+        <div class="form-group"><label>Base Crit %</label><input type="number" id="b-${slot.id}-crit" value="2" min="0" step="0.1" onchange="updateBuilder()"></div>
+        <div class="form-group"><label>Base Speed</label><input type="number" id="b-${slot.id}-speed" value="25" min="0" onchange="updateBuilder()"></div>
+      </div>` : ''}
+    </div>
+  `).join('');
+  // Set initial data-rarity
+  document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+  updateBuilder();
+}
+
+function updateBuilder() {
+  let totalHp = 0, totalDmg = 0, totalCrit = 0, totalSpeed = 0;
+  let totalScrap = 0, totalSiege = 0;
+  const rarityCounts = {};
+
+  SLOTS.forEach(slot => {
+    const rarity = document.getElementById(`b-${slot.id}-rarity`)?.value || 'epic';
+    const level = parseInt(document.getElementById(`b-${slot.id}-level`)?.value) || 0;
+    const baseHp = parseFloat(document.getElementById(`b-${slot.id}-hp`)?.value) || 0;
+    const baseDmg = parseFloat(document.getElementById(`b-${slot.id}-dmg`)?.value) || 0;
+
+    rarityCounts[rarity] = (rarityCounts[rarity] || 0) + 1;
+
+    // Scaled stats using iterative per-level formula
+    let hp = scaleStatIterative(baseHp, level, false);
+    let dmg = scaleStatIterative(baseDmg, level, false);
+    totalHp += hp;
+    totalDmg += dmg;
+
+    if (slot.isWeapon) {
+      const baseCrit = parseFloat(document.getElementById(`b-${slot.id}-crit`)?.value) || 0;
+      const baseSpeed = parseFloat(document.getElementById(`b-${slot.id}-speed`)?.value) || 0;
+      let crit = scaleStatIterative(baseCrit, level, true);
+      let speed = scaleStatIterative(baseSpeed, level, false);
+      if (crit > CRIT_CAP[rarity]) crit = CRIT_CAP[rarity];
+      if (speed > SPEED_CAP[rarity]) speed = SPEED_CAP[rarity];
+      totalCrit += crit;
+      totalSpeed += speed;
+    }
+
+    // Flat rarity bonuses
+    const flat = FLAT_BONUS[rarity];
+    totalHp += flat.hp;
+    totalDmg += flat.dmg;
+    totalCrit += flat.crit;
+    totalSpeed += flat.speed;
+
+    // Costs
+    const costs = calcUpgradeCost(rarity, !slot.isWeapon, 0, level);
+    totalScrap += costs.totalScrap;
+    totalSiege += costs.totalSiege;
+  });
+
+  // Set bonuses
+  const {totalDmgBonus, totalHpBonus, activeBonuses} = getSetBonuses(rarityCounts);
+
+  const summary = document.getElementById('builder-summary');
+  summary.innerHTML = `
+    <div class="results-title" style="margin-bottom:16px">📊 Total Character Stats</div>
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="s-label">❤️ Total HP</div>
+        <div class="s-value" style="color:var(--r-rare)">${fmt(totalHp * (1 + totalHpBonus/100))}</div>
+        <div class="s-detail">${fmt(totalHp)} base${totalHpBonus>0? ` +${totalHpBonus}% set`:''}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">⚔️ Total DMG</div>
+        <div class="s-value" style="color:var(--danger)">${fmt(totalDmg * (1 + totalDmgBonus/100))}</div>
+        <div class="s-detail">${fmt(totalDmg)} base${totalDmgBonus>0? ` +${totalDmgBonus}% set`:''}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">🎯 Crit</div>
+        <div class="s-value" style="color:var(--r-epic)">${fmtDec(totalCrit)}%</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">⚡ Speed</div>
+        <div class="s-value" style="color:var(--r-uncommon)">${fmt(Math.abs(totalSpeed))}ms</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">🔩 Total Scrap</div>
+        <div class="s-value" style="color:var(--r-uncommon)">${fmt(totalScrap)}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="s-label">💎 Total $SIEGE</div>
+        <div class="s-value" style="color:var(--r-legendary)">${fmt(totalSiege)}</div>
+      </div>
+    </div>
+    ${activeBonuses.length > 0 ? `
+    <div class="set-bonuses">
+      <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Set Bonuses Active</div>
+      ${activeBonuses.map(b => `
+        <span class="set-bonus-tag" style="background:${RARITY_BG[b.rarity]};color:${RARITY_COLORS[b.rarity]}">
+          ${RARITY_LABELS[b.rarity]} ${b.count}pc: +${b.dmg}% DMG & HP
+        </span>
+      `).join('')}
+    </div>` : ''}
+  `;
+}
+
+// ═══════════ INIT ═══════════
+initBuilder();
+// Set initial rarity data attributes
+document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+</script>
+</body>
+</html>
