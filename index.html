@@ -142,6 +142,71 @@ body::before {
 }
 .form-group select option { background: var(--surface); color: var(--text); }
 
+/* ═══════════════════ STEPPERS & BULK ═══════════════════ */
+.stepper {
+  display: flex; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; align-items: center; width: 100%; transition: border-color 0.2s;
+}
+.stepper:focus-within { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.15); }
+.stepper input {
+  flex: 1; border: none; background: transparent; text-align: center;
+  padding: 8px 4px; border-radius: 0; box-shadow: none !important; margin: 0;
+  -moz-appearance: textfield; min-width: 0;
+}
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.stepper-btn {
+  background: rgba(139,115,85,0.1); border: none; color: var(--gold);
+  width: 30px; height: 100%; min-height: 34px; cursor: pointer;
+  font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; user-select: none;
+}
+.stepper-btn:hover { background: rgba(201,168,76,0.2); }
+.stepper-btn:active { background: rgba(201,168,76,0.3); }
+.stepper-max {
+  font-size: 0.6rem; margin-right: 4px; cursor: pointer; color: var(--text-dim); text-transform: uppercase; font-weight: 700;
+}
+.stepper-max:hover { color: var(--gold); }
+
+.bulk-bar {
+  background: rgba(201,168,76,0.04); border: 1px solid var(--border-glow); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-end;
+}
+.bulk-bar .form-group { flex: 1; }
+.bulk-btn {
+  padding: 10px 16px; background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim);
+  color: var(--gold); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; white-space: nowrap; height: 38px;
+}
+.bulk-btn:hover { background: rgba(201,168,76,0.2); transform: translateY(-1px); }
+/* ═══════════════════ CATCH-UP / RUNE BUFFS ═══════════════════ */
+.catchup-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.catchup-btn {
+  flex: 1; min-width: 70px; padding: 8px 6px; text-align: center;
+  border: 1px solid var(--border); border-radius: 10px;
+  cursor: pointer; font-size: 0.75rem; font-weight: 700;
+  color: var(--text-muted); background: var(--bg2);
+  transition: all 0.2s; user-select: none; line-height: 1.3;
+}
+.catchup-btn:hover { border-color: var(--border-glow); color: var(--text); }
+.catchup-btn.active {
+  border-color: var(--gold); color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  box-shadow: 0 0 10px rgba(201,168,76,0.18);
+}
+.catchup-btn .cu-pct {
+  display: block; font-size: 1.05rem; font-weight: 900;
+  font-family: 'Cinzel', serif; margin-bottom: 1px;
+}
+.catchup-btn.active .cu-pct { color: var(--gold-bright); }
+.rune-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 6px; font-size: 0.68rem; font-weight: 600;
+  margin: 2px 3px 2px 0; background: rgba(139,115,85,0.1); color: var(--gold-dim);
+  border: 1px solid rgba(139,115,85,0.2);
+}
+
 /* Rarity select coloring */
 select.rarity-select[data-rarity="common"] { color: var(--r-common); }
 select.rarity-select[data-rarity="uncommon"] { color: var(--r-uncommon); }
@@ -285,7 +350,40 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ═══════════════════ SCROLLBAR ═══════════════════ */
+/* ═══════════════════ IMPORT MODAL ═══════════════════ */
+.import-panel {
+  background: rgba(0,20,40,0.6); border: 1px solid rgba(100,150,255,0.25); border-radius: 14px;
+  padding: 18px; margin-bottom: 16px; display: none;
+  animation: fadeIn 0.25s ease;
+}
+.import-panel.open { display: block; }
+.import-panel textarea {
+  width: 100%; height: 120px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; color: var(--text); font-family: monospace;
+  font-size: 0.78rem; resize: vertical; margin-bottom: 10px;
+}
+.import-panel textarea:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
+.bookmarklet-box {
+  background: var(--bg2); border: 1px dashed rgba(96,165,250,0.3); border-radius: 10px;
+  padding: 12px; margin-bottom: 12px;
+}
+.bookmarklet-box code {
+  display: block; font-size: 0.68rem; color: #93c5fd; word-break: break-all;
+  max-height: 80px; overflow: auto; margin: 8px 0;
+  background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;
+}
+.import-steps { list-style: none; margin: 0 0 14px; padding: 0; }
+.import-steps li {
+  font-size: 0.75rem; color: var(--text-muted); padding: 4px 0 4px 20px;
+  position: relative;
+}
+.import-steps li::before { content: attr(data-n); position: absolute; left: 0; color: #60a5fa; font-weight: 700; }
+.import-steps li strong { color: var(--text); }
+.import-btn-row { display: flex; gap: 8px; }
+.import-status { font-size: 0.75rem; margin-top: 8px; padding: 6px 10px; border-radius: 6px; display: none; }
+.import-status.ok { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); display: block; }
+.import-status.err { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); display: block; }
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -428,6 +526,42 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
   <!-- ══════════ TAB 4: CHARACTER BUILDER ══════════ -->
   <div class="tab-content" id="tab-builder">
 
+    <!-- IMPORT FROM GAME -->
+    <div class="card" style="border-color:rgba(96,165,250,0.25);background:rgba(15,11,26,0.95)">
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="icon">🎮</span> Import from Game</span>
+        <button class="bulk-btn" onclick="document.getElementById('import-panel').classList.toggle('open')" style="background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.3);color:#93c5fd">▾ Show / Hide</button>
+      </div>
+      <div class="import-panel" id="import-panel">
+        <!-- Step 1: Bookmarklet -->
+        <div class="bookmarklet-box">
+          <div style="font-size:0.7rem;font-weight:700;color:#93c5fd;margin-bottom:6px">🔖 Step 1 — Install Bookmarklet (one time)</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px">Drag the link below to your bookmarks bar:</div>
+          <div style="text-align:center;margin:8px 0">
+            <a id="bookmarklet-link" href="" style="display:inline-block;padding:8px 18px;background:rgba(201,168,76,0.15);border:1px solid var(--gold-dim);border-radius:8px;color:var(--gold);font-weight:700;font-size:0.82rem;text-decoration:none;cursor:move" title="Drag me to bookmarks bar">🎮 Export Sol Siege</a>
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-dim);text-align:center">Or copy the code below and create a bookmark manually (URL field)</div>
+          <code id="bookmarklet-code" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);this.style.color='#4ade80'" title="Click to copy">Loading...</code>
+          <div style="font-size:0.65rem;color:var(--text-dim)">Click the code to copy it → create new bookmark → paste as URL</div>
+        </div>
+        <!-- Steps guide -->
+        <ul class="import-steps">
+          <li data-n="2">Go to the <strong>Sol Siege</strong> game tab (must be logged in)</li>
+          <li data-n="3">Click the <strong>🎮 Export Sol Siege</strong> bookmark — a popup will appear</li>
+          <li data-n="4">Click <strong>Copy JSON</strong> in the popup (data stays in your browser, no internet)</li>
+          <li data-n="5">Come back here and paste below, then click <strong>Import</strong></li>
+        </ul>
+        <!-- Paste area -->
+        <div style="font-size:0.7rem;font-weight:700;color:#93c5fd;margin-bottom:8px">📋 Step 5 — Paste Game Data</div>
+        <textarea id="import-json" placeholder='Paste JSON here...'></textarea>
+        <div class="import-btn-row">
+          <button class="btn btn-primary" style="margin-top:0" onclick="doImport()">⬇️ Import & Fill Builder</button>
+          <button class="bulk-btn" onclick="document.getElementById('import-json').value=''">Clear</button>
+        </div>
+        <div id="import-status" class="import-status"></div>
+      </div>
+    </div>
+
     <!-- CHARACTER SECTION -->
     <div class="card">
       <div class="card-title"><span class="icon">👤</span> Character</div>
@@ -453,34 +587,37 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
 
     <!-- SKILL POINTS -->
     <div class="card">
-      <div class="card-title"><span class="icon">⭐</span> Skill Points</div>
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="icon">⭐</span> Skill Points</span>
+        <button class="bulk-btn" style="padding:4px 10px;height:auto;font-size:0.65rem;" onclick="resetSkills()">Reset</button>
+      </div>
       <p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:12px">1 point per level. Distribute across stats.</p>
       <div class="form-row triple" style="margin-bottom:6px">
         <div class="form-group">
           <label>⚔️ Damage</label>
-          <input type="number" id="sp-dmg" value="20" min="0" onchange="updateBuilder()">
+          <div class="stepper"><button class="stepper-btn" onclick="stepSp('sp-dmg',-1)">-</button><input type="number" id="sp-dmg" value="20" min="0" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepSp('sp-dmg',1)">+</button></div>
           <span style="font-size:0.6rem;color:var(--text-dim)">+5% DMG mult, +2.5% flat</span>
         </div>
         <div class="form-group">
           <label>🎯 Crit</label>
-          <input type="number" id="sp-crit" value="10" min="0" onchange="updateBuilder()">
+          <div class="stepper"><button class="stepper-btn" onclick="stepSp('sp-crit',-1)">-</button><input type="number" id="sp-crit" value="10" min="0" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepSp('sp-crit',1)">+</button></div>
           <span style="font-size:0.6rem;color:var(--text-dim)">+1% crit chance</span>
         </div>
         <div class="form-group">
           <label>⚡ Speed</label>
-          <input type="number" id="sp-speed" value="5" min="0" onchange="updateBuilder()">
+          <div class="stepper"><button class="stepper-btn" onclick="stepSp('sp-speed',-1)">-</button><input type="number" id="sp-speed" value="5" min="0" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepSp('sp-speed',1)">+</button></div>
           <span style="font-size:0.6rem;color:var(--text-dim)">-10ms interval</span>
         </div>
       </div>
       <div class="form-row triple">
         <div class="form-group">
           <label>❤️ HP</label>
-          <input type="number" id="sp-hp" value="10" min="0" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">+1% total HP</span>
+          <div class="stepper"><button class="stepper-btn" onclick="stepSp('sp-hp',-1)">-</button><input type="number" id="sp-hp" value="10" min="0" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepSp('sp-hp',1)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">+8% base HP</span>
         </div>
         <div class="form-group">
           <label>🪙 Token</label>
-          <input type="number" id="sp-token" value="4" min="0" onchange="updateBuilder()">
+          <div class="stepper"><button class="stepper-btn" onclick="stepSp('sp-token',-1)">-</button><input type="number" id="sp-token" value="4" min="0" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepSp('sp-token',1)">+</button></div>
           <span style="font-size:0.6rem;color:var(--text-dim)">+2.5% token drop</span>
         </div>
         <div class="form-group">
@@ -492,63 +629,171 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
 
     <!-- MASTERY -->
     <div class="card">
-      <div class="card-title"><span class="icon">🌟</span> Mastery <span style="font-size:0.65rem;color:var(--text-dim);font-family:Inter;font-weight:400;margin-left:8px">(Unlocks at Wave 100)</span></div>
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="icon">🌟</span> Mastery <span style="font-size:0.65rem;color:var(--text-dim);font-family:Inter;font-weight:400;margin-left:8px">(Unlocks Wave 100)</span></span>
+        <button class="bulk-btn" style="padding:4px 10px;height:auto;font-size:0.65rem;" onclick="resetMastery()">Reset</button>
+      </div>
+      <!-- COMBAT MASTERY -->
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--r-mythical);margin-bottom:8px;margin-top:4px">⚔️ Combat</div>
       <div class="form-row triple" style="margin-bottom:6px">
         <div class="form-group">
-          <label>🗡️ Life Steal</label>
-          <input type="number" id="m-lifesteal" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt</span>
+          <label>🗡️ Life Steal <span style="color:var(--text-dim);font-weight:400">/100</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-lifesteal',-1,100)">-</button><input type="number" id="m-lifesteal" value="0" min="0" max="100" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-lifesteal',1,100)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt → max 25%</span>
         </div>
         <div class="form-group">
-          <label>⚔️ Double Strike</label>
-          <input type="number" id="m-doublestrike" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.5%/pt</span>
+          <label>⚔️ Double Strike <span style="color:var(--text-dim);font-weight:400">/40</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-doublestrike',-1,40)">-</button><input type="number" id="m-doublestrike" value="0" min="0" max="40" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-doublestrike',1,40)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.5%/pt → max 20%</span>
         </div>
         <div class="form-group">
-          <label>💀 Armor Pen</label>
-          <input type="number" id="m-armorpen" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.75%/pt</span>
+          <label>💀 Armor Pen <span style="color:var(--text-dim);font-weight:400">/40</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-armorpen',-1,40)">-</button><input type="number" id="m-armorpen" value="0" min="0" max="40" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-armorpen',1,40)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.75%/pt → max 30%</span>
         </div>
       </div>
       <div class="form-row triple" style="margin-bottom:6px">
         <div class="form-group">
-          <label>👹 Boss Slayer</label>
-          <input type="number" id="m-bossslayer" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.1%/pt</span>
+          <label>👹 Boss Slayer <span style="color:var(--text-dim);font-weight:400">/100</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-bossslayer',-1,100)">-</button><input type="number" id="m-bossslayer" value="0" min="0" max="100" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-bossslayer',1,100)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.1%/pt → max 10%</span>
         </div>
         <div class="form-group">
-          <label>🔪 Finisher</label>
-          <input type="number" id="m-finisher" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.2%/pt</span>
+          <label>🔪 Finisher <span style="color:var(--text-dim);font-weight:400">/100</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-finisher',-1,100)">-</button><input type="number" id="m-finisher" value="0" min="0" max="100" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-finisher',1,100)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.2%/pt (boss&lt;50% HP)</span>
         </div>
         <div class="form-group">
-          <label>🛡️ Armor (DR)</label>
-          <input type="number" id="m-armor" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.1% DR/pt</span>
+          <label id="m-mastery-total-label" style="color:var(--text-muted)">Mastery Pts Used</label>
+          <div id="m-total-counter" style="padding:10px 0;font-size:0.85rem;font-weight:700;color:var(--gold)">0</div>
+        </div>
+      </div>
+      <!-- ENDURANCE MASTERY -->
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--r-rare);margin-bottom:8px;margin-top:10px">🛡️ Endurance</div>
+      <div class="form-row triple" style="margin-bottom:6px">
+        <div class="form-group">
+          <label>🛡️ Armor (DR) <span style="color:var(--text-dim);font-weight:400">/100</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-armor',-1,100)">-</button><input type="number" id="m-armor" value="0" min="0" max="100" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-armor',1,100)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.1% DR/pt → max 10%</span>
+        </div>
+        <div class="form-group">
+          <label>🌿 Thorns <span style="color:var(--text-dim);font-weight:400">/40</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-thorns',-1,40)">-</button><input type="number" id="m-thorns" value="0" min="0" max="40" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-thorns',1,40)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt reflect</span>
+        </div>
+        <div class="form-group">
+          <label>🛡️ Fortify <span style="color:var(--text-dim);font-weight:400">/40</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-fortify',-1,40)">-</button><input type="number" id="m-fortify" value="0" min="0" max="40" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-fortify',1,40)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">3.75%/pt HP shield</span>
         </div>
       </div>
       <div class="form-row triple">
         <div class="form-group">
-          <label>🌿 Thorns</label>
-          <input type="number" id="m-thorns" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">0.25%/pt reflect</span>
-        </div>
-        <div class="form-group">
-          <label>🛡️ Fortify</label>
-          <input type="number" id="m-fortify" value="0" min="0" max="100" onchange="updateBuilder()">
-          <span style="font-size:0.6rem;color:var(--text-dim)">3.75% HP shield</span>
-        </div>
-        <div class="form-group">
-          <label>💫 Second Wind</label>
-          <input type="number" id="m-secondwind" value="0" min="0" max="3" onchange="updateBuilder()">
+          <label>💫 Second Wind <span style="color:var(--text-dim);font-weight:400">/3</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-secondwind',-1,3)">-</button><input type="number" id="m-secondwind" value="0" min="0" max="3" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-secondwind',1,3)">+</button></div>
           <span style="font-size:0.6rem;color:var(--text-dim)">20% HP revive (max 3)</span>
+        </div>
+        <div class="form-group">
+          <div style="padding:10px 0"></div>
+        </div>
+        <div class="form-group">
+          <div style="padding:10px 0"></div>
+        </div>
+      </div>
+      <!-- FORTUNE MASTERY -->
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--r-legendary);margin-bottom:8px;margin-top:10px">🪙 Fortune</div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>⚡ Token Surge <span style="color:var(--text-dim);font-weight:400">/40</span></label>
+          <div class="stepper"><button class="stepper-btn" onclick="stepM('m-tokensurge',-1,40)">-</button><input type="number" id="m-tokensurge" value="0" min="0" max="40" onchange="updateBuilder()"><button class="stepper-btn" onclick="stepM('m-tokensurge',1,40)">+</button></div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">0.75%/pt token → max 30%</span>
+        </div>
+        <div class="form-group">
+          <div style="padding:10px 0"></div>
+        </div>
+        <div class="form-group">
+          <div style="padding:10px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE BUFFS -->
+    <div class="card">
+      <div class="card-title"><span class="icon">✨</span> Active Buffs</div>
+
+      <!-- Catch-up -->
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--r-rare);margin-bottom:8px">⚡ Catch-Up Bonus (DMG &amp; HP)</div>
+      <div class="catchup-btns" id="catchup-btns">
+        <div class="catchup-btn active" data-val="0" onclick="setCatchup(0)">
+          <span class="cu-pct">+0%</span>No buff
+        </div>
+        <div class="catchup-btn" data-val="15" onclick="setCatchup(15)">
+          <span class="cu-pct">+15%</span>DMG &amp; HP
+        </div>
+        <div class="catchup-btn" data-val="30" onclick="setCatchup(30)">
+          <span class="cu-pct">+30%</span>DMG &amp; HP
+        </div>
+        <div class="catchup-btn" data-val="45" onclick="setCatchup(45)">
+          <span class="cu-pct">+45%</span>DMG &amp; HP
+        </div>
+      </div>
+      <p style="font-size:0.65rem;color:var(--text-dim);margin-bottom:14px">Temporary buff for players behind the current wave. Multiplies both DMG and HP.</p>
+
+      <!-- Rune Bonuses -->
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--r-legendary);margin-bottom:8px">🔮 Rune Bonuses</div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label>⚔️ Rune DMG %</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepRune('rune-dmg',-1)">-</button>
+            <input type="number" id="rune-dmg" value="0" min="0" max="200" step="0.5" onchange="updateBuilder()">
+            <button class="stepper-btn" onclick="stepRune('rune-dmg',1)">+</button>
+          </div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">+% to total DMG</span>
+        </div>
+        <div class="form-group">
+          <label>❤️ Rune HP %</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepRune('rune-hp',-1)">-</button>
+            <input type="number" id="rune-hp" value="0" min="0" max="200" step="0.5" onchange="updateBuilder()">
+            <button class="stepper-btn" onclick="stepRune('rune-hp',1)">+</button>
+          </div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">+% to total HP</span>
+        </div>
+        <div class="form-group">
+          <label>🩸 Rune Vamp %</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepRune('rune-vamp',-1)">-</button>
+            <input type="number" id="rune-vamp" value="0" min="0" max="100" step="0.5" onchange="updateBuilder()">
+            <button class="stepper-btn" onclick="stepRune('rune-vamp',1)">+</button>
+          </div>
+          <span style="font-size:0.6rem;color:var(--text-dim)">+% lifesteal</span>
         </div>
       </div>
     </div>
 
     <!-- EQUIPMENT -->
-    <div class="card">
-      <div class="card-title"><span class="icon">🎒</span> Equipment</div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:12px"><span class="icon">🎒</span> Equipment</div>
+      <div class="bulk-bar">
+        <div class="form-group">
+          <label>Global Rarity</label>
+          <select id="bulk-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value">
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic" selected>Epic</option>
+            <option value="legendary">Legendary</option>
+            <option value="mythical">Mythical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Global Level</label>
+          <input type="number" id="bulk-level" value="50" min="0" max="200" style="padding:9px">
+        </div>
+        <button class="bulk-btn" onclick="applyBulkEq()">Apply to All</button>
+        <button class="bulk-btn" style="background:rgba(255,255,255,0.05);color:var(--text-muted);border-color:var(--border)" onclick="fillDefaultStats()" title="Fills standard base stats (20/8 weapon, 40/2 armor)">Auto-Fill Base</button>
+      </div>
     </div>
     <div class="slot-grid" id="builder-slots"></div>
 
@@ -609,9 +854,9 @@ const CLASSES = {
 
 // Level-up auto gains
 const LEVEL_HP_BASE = 100;
-const LEVEL_HP_GROWTH = 0.08;  // +8% per level
+const LEVEL_HP_GROWTH = 0.36;  // +36% per level (verified vs lv.258 game data)
 const LEVEL_DMG_BASE = 10;
-const LEVEL_DMG_GROWTH = 0.05; // +5% per level
+const LEVEL_DMG_GROWTH = 0.284; // +28.4% per level (verified vs lv.258 game data)
 
 function getSiegeCostPerLevel(rarity, level) {
   const tiers = SIEGE_COST_TABLE[rarity];
@@ -1035,6 +1280,10 @@ function updateBuilder() {
   const mThorns = parseFloat(document.getElementById('m-thorns')?.value) || 0;
   const mFortify = parseFloat(document.getElementById('m-fortify')?.value) || 0;
   const mSecondWind = parseInt(document.getElementById('m-secondwind')?.value) || 0;
+  const mTokenSurge = parseFloat(document.getElementById('m-tokensurge')?.value) || 0;
+  const totalMastery = mLifesteal + mDoubleStrike + mArmorPen + mBossSlayer + mFinisher + mArmor + mThorns + mFortify + mSecondWind + mTokenSurge;
+  const mCounter = document.getElementById('m-total-counter');
+  if (mCounter) mCounter.textContent = totalMastery;
 
   // ─── Character base from leveling ───
   // HP = base × (1 + growth × level) × classMult
@@ -1091,33 +1340,34 @@ function updateBuilder() {
 
   // ─── TOTAL STAT CALCULATIONS ───
 
-  // Stat point multipliers
-  const statDmgMult = 1 + spDmg * 0.05;      // +5% per point to total DMG
-  const statFlatDmgMult = 1 + spDmg * 0.025;  // +2.5% per point to item flat DMG
-  const statHpMult = 1 + spHp * 0.01;          // +1% per point to total HP
-  const statCritAdd = spCrit * 1;               // +1% crit per point
-  const statSpeedReduce = spSpeed * 10;         // -10ms per point
+  // Damage skill: +5%/pt multiplicative on charBaseDmg ("Base hit damage" in stat tree)
+  const statDmgMult = 1 + spDmg * 0.05;
+  // HP skill: +8%/pt multiplicative on charBaseHp ONLY (confirmed: 72pts=+576%)
+  const statHpMult = 1 + spHp * 0.08;
+  const statCritAdd = spCrit * 1;           // +1% crit per point
+  const statSpeedReduce = spSpeed * 10;     // -10ms per point
 
-  // Weapon rarity DMG multiplier (includes upgrade scaling)
+  // Weapon rarity DMG multiplier (includes upgrade scaling) — applies to charBase only
   const weaponDmgMult = getDmgMult(weaponRarity, weaponUpgradeLevel);
-  const raritySqrtMult = Math.sqrt(RARITY_DMG_MULT[weaponRarity]);
 
-  // Total Damage = (charBaseDmg × statDmgMult × weaponDmgMult) + (equipDmg × statFlatDmgMult × raritySqrtMult)
-  const totalDmgRaw = (charBaseDmg * statDmgMult * weaponDmgMult) + (equipDmg * statFlatDmgMult * raritySqrtMult);
+  // Total Damage = charBaseDmg × statDmgMult × weaponMult + equipDmg (flat, no skill mult on equip)
+  const charDmgComponent = charBaseDmg * statDmgMult * weaponDmgMult;
+  const totalDmgRaw = charDmgComponent + equipDmg;
   const totalDmg = totalDmgRaw * (1 + totalDmgBonus / 100);
 
-  // Total HP = (charBaseHp + equipHp) × statHpMult × (1 + set%)
-  const totalHpRaw = (charBaseHp + equipHp) * statHpMult;
+  // Total HP = charBaseHp × statHpMult + equipHp (flat) × (1 + set%)
+  // HP skill ONLY boosts char base HP, equipment HP is added flat
+  const totalHpRaw = charBaseHp * statHpMult + equipHp;
   const totalHp = totalHpRaw * (1 + totalHpBonus / 100);
 
   // Crit = weapon crit + class crit + skill crit (cap 95%)
   const totalCrit = Math.min(95, equipCrit + cls.critBonus + statCritAdd);
 
-  // Attack speed = class base - weapon speed bonus - skill speed
+  // Attack speed = class base - weapon speed bonus - skill speed (min 400ms)
   const totalAtkSpeed = Math.max(400, cls.atkSpeed - equipSpeed - statSpeedReduce);
 
-  // DPS = totalDmg × (1 + crit/100) × (1000/atkSpeed) × (1 + doubleStrike%)
-  const critMultiplier = 1 + totalCrit / 100; // simplified: crit does 2x, so avg = 1 + crit%
+  // DPS = totalDmg × (1 + crit/100 * 0.5) × (1000/atkSpeed) × (1 + doubleStrike%)
+  const critMultiplier = 1 + (totalCrit / 100) * 0.5; // crit does 1.5x
   const attacksPerSec = 1000 / totalAtkSpeed;
   const doubleStrikeMult = 1 + mDoubleStrike * 0.005;
   const dps = totalDmg * critMultiplier * attacksPerSec * doubleStrikeMult;
@@ -1125,26 +1375,56 @@ function updateBuilder() {
   // Survivability
   const damageReduction = Math.min(75, mArmor * 0.1); // cap at 75%
   const fortifyShield = totalHp * mFortify * 0.0375;
-  const effectiveHp = (totalHp + fortifyShield) / (1 - damageReduction / 100);
+  // Effective HP: ((Total HP + Fortify) / (1 - DR)) * (1 + ReviveEfficiency)
+  const effectiveHp = ((totalHp + fortifyShield) / (1 - damageReduction / 100)) * (1 + mSecondWind * 0.20);
   const lifestealPerSec = dps * mLifesteal * 0.0025;
 
+  // Token bonus
+  const tokenBonus = Math.round(
+    (RARITY_TOKEN_MULT[weaponRarity] - 1) * 100   // weapon rarity
+    + spToken * 2.5                                // skill tree
+    + mTokenSurge * 0.75                           // mastery
+  );
+
+  // ─── Active Buffs: Runes + Catch-Up ───
+  const runeDmgPct = parseFloat(document.getElementById('rune-dmg')?.value) || 0;
+  const runeHpPct  = parseFloat(document.getElementById('rune-hp')?.value)  || 0;
+  const runeVampPct = parseFloat(document.getElementById('rune-vamp')?.value) || 0;
+  
+  // Apply rune and catch-up multipliers
+  const finalDmg = totalDmg * (1 + runeDmgPct / 100) * (1 + catchupBonus / 100);
+  const finalHp  = totalHp  * (1 + runeHpPct  / 100) * (1 + catchupBonus / 100);
+  
+  // Re-derive survivability from finalHp
+  const finalFortifyShield = finalHp * mFortify * 0.0375;
+  const finalEffectiveHp = ((finalHp + finalFortifyShield) / (1 - damageReduction / 100)) * (1 + mSecondWind * 0.20);
+  
+  // Re-derive DPS from finalDmg
+  const finalDps = finalDmg * critMultiplier * attacksPerSec * doubleStrikeMult;
+  const totalVampPct = mLifesteal * 0.25 + runeVampPct;
+  const finalLifestealPerSec = finalDps * totalVampPct / 100;
   // ─── RENDER ───
   const summary = document.getElementById('builder-summary');
+  // Buff label
+  const buffLabels = [];
+  if (catchupBonus > 0) buffLabels.push(`⚡+${catchupBonus}%`);
+  if (runeDmgPct > 0 || runeHpPct > 0 || runeVampPct > 0) buffLabels.push(`🔮 Rune`);
+  const buffStr = buffLabels.length ? ` <span style="font-size:0.65rem;color:var(--r-rare);font-family:Inter;font-weight:500;margin-left:6px">[${buffLabels.join(' · ')}]</span>` : '';
   summary.innerHTML = `
-    <div class="results-title" style="margin-bottom:16px">📊 ${cls.label} — Level ${charLevel}</div>
+    <div class="results-title" style="margin-bottom:16px">📊 ${cls.label} — Level ${charLevel}${buffStr}</div>
 
     <!-- COMBAT STATS -->
     <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">⚔️ Combat</div>
     <div class="summary-grid" style="margin-bottom:16px">
       <div class="summary-stat">
         <div class="s-label">💥 DPS</div>
-        <div class="s-value" style="color:var(--danger)">${fmt(dps)}</div>
+        <div class="s-value" style="color:var(--danger)">${fmt(finalDps)}</div>
         <div class="s-detail">${fmtDec(attacksPerSec,2)} atk/s</div>
       </div>
       <div class="summary-stat">
         <div class="s-label">⚔️ DMG/Hit</div>
-        <div class="s-value" style="color:var(--r-mythical)">${fmt(totalDmg)}</div>
-        <div class="s-detail">×${fmtDec(weaponDmgMult,2)} mult</div>
+        <div class="s-value" style="color:var(--r-mythical)">${fmt(finalDmg)}</div>
+        <div class="s-detail">${(runeDmgPct > 0 || catchupBonus > 0) ? `base ${fmt(totalDmg)}` : `×${fmtDec(weaponDmgMult,2)} mult`}</div>
       </div>
       <div class="summary-stat">
         <div class="s-label">🎯 Crit</div>
@@ -1163,23 +1443,23 @@ function updateBuilder() {
     <div class="summary-grid" style="margin-bottom:16px">
       <div class="summary-stat">
         <div class="s-label">❤️ Total HP</div>
-        <div class="s-value" style="color:var(--r-rare)">${fmt(totalHp)}</div>
-        <div class="s-detail">${fmt(charBaseHp)} char + ${fmt(equipHp)} eq</div>
+        <div class="s-value" style="color:var(--r-rare)">${fmt(finalHp)}</div>
+        <div class="s-detail">${(runeHpPct > 0 || catchupBonus > 0) ? `base ${fmt(totalHp)}` : `${fmt(charBaseHp * statHpMult)} char + ${fmt(equipHp)} eq`}</div>
       </div>
       <div class="summary-stat">
         <div class="s-label">🛡️ eHP</div>
-        <div class="s-value" style="color:var(--r-legendary)">${fmt(effectiveHp)}</div>
-        <div class="s-detail">${fmtDec(damageReduction)}% DR${fortifyShield > 0 ? ` +${fmt(fortifyShield)} shield` : ''}</div>
+        <div class="s-value" style="color:var(--r-legendary)">${fmt(finalEffectiveHp)}</div>
+        <div class="s-detail">${fmtDec(damageReduction)}% DR${finalFortifyShield > 0 ? ` +${fmt(finalFortifyShield)} shield` : ''}</div>
       </div>
       <div class="summary-stat">
         <div class="s-label">💚 Lifesteal</div>
-        <div class="s-value" style="color:var(--success)">${fmt(lifestealPerSec)}/s</div>
-        <div class="s-detail">${fmtDec(mLifesteal * 0.25)}%</div>
+        <div class="s-value" style="color:var(--success)">${fmt(finalLifestealPerSec)}/s</div>
+        <div class="s-detail">${fmtDec(totalVampPct, 2)}%${runeVampPct > 0 ? ` (${fmtDec(mLifesteal*0.25)}+${fmtDec(runeVampPct)} rune)` : ''}</div>
       </div>
       <div class="summary-stat">
         <div class="s-label">💫 Second Wind</div>
         <div class="s-value" style="color:var(--r-epic)">${mSecondWind}x</div>
-        <div class="s-detail">${mSecondWind > 0 ? `${mSecondWind}×${Math.round(totalHp*0.2)} HP` : 'none'}</div>
+        <div class="s-detail">${mSecondWind > 0 ? `${mSecondWind}×${fmt(finalHp*0.2)} HP` : 'none'}</div>
       </div>
     </div>
 
@@ -1220,577 +1500,245 @@ function updateBuilder() {
 }
 
 // ═══════════ INIT ═══════════
-initBuilder();
-document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
-</script>
-</body>
-</html>
-
-  <div class="tab-content" id="tab-builder">
-    <div class="card">
-      <div class="card-title"><span class="icon">🛡️</span> Equipment Set Builder</div>
-      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Configure all 7 equipment slots. Stats, costs, and set bonuses are calculated automatically.</p>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Character Level</label>
-          <input type="number" id="builder-char-level" value="1" min="1" max="100" onchange="updateBuilder()">
-        </div>
-        <div class="form-group">
-          <label>Mastery Level</label>
-          <input type="number" id="builder-mastery-level" value="0" min="0" max="100" onchange="updateBuilder()">
-        </div>
-      </div>
-      <p style="font-size:0.65rem;color:var(--text-dim);margin-top:-8px;">⚠️ Character & Mastery bonuses require wiki data (save Leveling & Mastery pages as HTML for Phase 2)</p>
-    </div>
-    <div class="slot-grid" id="builder-slots"></div>
-    <div class="builder-summary" id="builder-summary"></div>
-  </div>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════════
-// ═══════════════════ GAME DATA FROM WIKI ═══════════════════
-// ═══════════════════════════════════════════════════════════
-
-const RARITIES = ['common','uncommon','rare','epic','legendary','mythical'];
-const RARITY_LABELS = {common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic',legendary:'Legendary',mythical:'Mythical'};
-const RARITY_COLORS = {common:'var(--r-common)',uncommon:'var(--r-uncommon)',rare:'var(--r-rare)',epic:'var(--r-epic)',legendary:'var(--r-legendary)',mythical:'var(--r-mythical)'};
-const RARITY_BG = {common:'var(--r-common-bg)',uncommon:'var(--r-uncommon-bg)',rare:'var(--r-rare-bg)',epic:'var(--r-epic-bg)',legendary:'var(--r-legendary-bg)',mythical:'var(--r-mythical-bg)'};
-
-// Scrap rarity multiplier
-const RARITY_SCRAP_MULT = {common:1.0,uncommon:1.1,rare:1.3,epic:1.6,legendary:2.0,mythical:3.0};
-
-// Weapon damage multiplier
-const RARITY_DMG_MULT = {common:1.0,uncommon:1.4,rare:2.0,epic:3.5,legendary:6.0,mythical:10.0};
-
-// Token drop multiplier (weapons only)
-const RARITY_TOKEN_MULT = {common:1.00,uncommon:1.10,rare:1.25,epic:1.50,legendary:2.00,mythical:2.50};
-
-// Crit & Speed caps per rarity (weapons only)
-const CRIT_CAP = {common:10,uncommon:15,rare:25,epic:40,legendary:50,mythical:100};
-const SPEED_CAP = {common:100,uncommon:200,rare:300,epic:400,legendary:500,mythical:700};
-
-// Flat stat bonuses per equipped item rarity
-const FLAT_BONUS = {
-  common: {hp:0,dmg:0,crit:0,speed:0},
-  uncommon: {hp:10,dmg:2,crit:1,speed:-20},
-  rare: {hp:25,dmg:5,crit:2,speed:-40},
-  epic: {hp:50,dmg:10,crit:4,speed:-60},
-  legendary: {hp:100,dmg:20,crit:7,speed:-80},
-  mythical: {hp:200,dmg:40,crit:10,speed:-120}
-};
-
-// $SIEGE cost per upgrade level by rarity
-const SIEGE_COST_TABLE = {
-  common:    [5,5,10,15,15,25,25,50,50,50,50],
-  uncommon:  [10,15,25,50,50,75,75,150,150,150,150],
-  rare:      [50,50,50,100,200,250,300,350,400,1000,1000],
-  epic:      [200,200,200,400,400,1000,1250,1500,1500,1750,2500],
-  legendary: [1000,1250,1500,2500,2750,5000,7500,10000,15000,20000,30000],
-  mythical:  [5000,5000,6500,7500,12500,15000,17500,20000,25000,40000,75000]
-};
-
-function getSiegeCostPerLevel(rarity, level) {
-  const tiers = SIEGE_COST_TABLE[rarity];
-  const tierIdx = Math.min(Math.floor(level / 10), tiers.length - 1);
-  return tiers[tierIdx];
-}
-
-// Scrap growth rate per level tier
-function getScrapGrowthRate(level) {
-  if (level < 10) return 1.35;
-  if (level < 25) return 1.25;
-  if (level < 50) return 1.15;
-  return 1.08;
-}
-
-// Calculate scrap cost for a single level upgrade
-function getScrapCostForLevel(level, rarity, isEquipment) {
-  let compound = 1;
-  for (let i = 0; i < level; i++) {
-    compound *= getScrapGrowthRate(i);
-  }
-  const base = 25;
-  const rarityMult = RARITY_SCRAP_MULT[rarity];
-  const eqDiscount = isEquipment ? 0.70 : 1.0;
-  return Math.floor(base * compound * rarityMult * eqDiscount);
-}
-
-// Calculate total upgrade cost from levelFrom to levelTo
-function calcUpgradeCost(rarity, isEquipment, fromLevel, toLevel) {
-  let totalScrap = 0;
-  let totalSiege = 0;
-  const details = [];
-  for (let lvl = fromLevel; lvl < toLevel; lvl++) {
-    const scrap = getScrapCostForLevel(lvl, rarity, isEquipment);
-    const siege = getSiegeCostPerLevel(rarity, lvl);
-    totalScrap += scrap;
-    totalSiege += siege;
-    details.push({ level: lvl + 1, scrap, siege, totalScrap, totalSiege });
-  }
-  return { totalScrap, totalSiege, details };
-}
-
-// ══════ STAT SCALING (iterative, matching game engine) ══════
-// Game applies floor/round EACH level — not base × 1.10^N directly!
-// Integer stats (HP, DMG, Speed): max(prev + 1, floor(prev × 1.10))
-// Percent stats (Crit%): round(prev × 1.10, 1 decimal place)
-
-function scaleStatIterative(base, levels, isPercent) {
-  let val = base;
-  for (let i = 0; i < levels; i++) {
-    if (isPercent) {
-      val = Math.round(val * 1.10 * 10) / 10;
-    } else {
-      val = Math.max(Math.floor(val) + 1, Math.floor(val * 1.10));
-    }
-  }
-  return isPercent ? Math.round(val * 10) / 10 : Math.floor(val);
-}
-
-// Scale stat from one level to another (reverse to base first if needed)
-function scaleStatFromTo(stat, fromLevel, toLevel, isPercent) {
-  if (fromLevel === 0) return scaleStatIterative(stat, toLevel, isPercent);
-  // Find base via binary search, then forward-compute to target
-  const base = findBaseStat(stat, fromLevel, isPercent);
-  return scaleStatIterative(base, toLevel, isPercent);
-}
-
-// Binary search to find base stat that produces target at given level
-function findBaseStat(target, level, isPercent) {
-  if (level === 0) return target;
-  // For integer stats, try every candidate from 0 to target
-  if (!isPercent) {
-    let lo = 0, hi = target;
-    while (lo <= hi) {
-      const mid = Math.floor((lo + hi) / 2);
-      const result = scaleStatIterative(mid, level, false);
-      if (result === target) return mid;
-      if (result < target) lo = mid + 1;
-      else hi = mid - 1;
-    }
-    return lo; // closest
-  } else {
-    // For percent stats, use float binary search
-    let lo = 0, hi = target;
-    for (let iter = 0; iter < 100; iter++) {
-      const mid = (lo + hi) / 2;
-      const result = scaleStatIterative(mid, level, true);
-      if (Math.abs(result - target) < 0.05) return Math.round(mid * 10) / 10;
-      if (result < target) lo = mid;
-      else hi = mid;
-    }
-    return Math.round(((lo + hi) / 2) * 10) / 10;
-  }
-}
-
-// DMG MULT scaling: rarity_mult × (1 + 0.05 × level)
-function getDmgMult(rarity, level) {
-  return RARITY_DMG_MULT[rarity] * (1 + 0.05 * level);
-}
-
-// Set bonuses
-const SET_BONUSES = {
-  epic: [{count:6, dmg:3, hp:3}, {count:7, dmg:3, hp:3}],
-  legendary: [{count:4, dmg:3, hp:3}, {count:5, dmg:6, hp:6}, {count:7, dmg:8, hp:8}],
-  mythical: [{count:1, dmg:2, hp:2}, {count:2, dmg:4, hp:4}, {count:3, dmg:10, hp:10}, {count:4, dmg:15, hp:15}, {count:5, dmg:20, hp:20}, {count:7, dmg:50, hp:50}]
-};
-
-function getSetBonuses(rarityCounts) {
-  let totalDmgBonus = 0, totalHpBonus = 0;
-  const activeBonuses = [];
-  for (const rarity of ['mythical','legendary','epic']) {
-    const count = rarityCounts[rarity] || 0;
-    if (count < 1 || !SET_BONUSES[rarity]) continue;
-    const tiers = SET_BONUSES[rarity];
-    let best = null;
-    for (const tier of tiers) {
-      if (count >= tier.count) best = tier;
-    }
-    if (best) {
-      totalDmgBonus += best.dmg;
-      totalHpBonus += best.hp;
-      activeBonuses.push({rarity, count, dmg: best.dmg, hp: best.hp});
-    }
-  }
-  return {totalDmgBonus, totalHpBonus, activeBonuses};
-}
-
-// ═══════════════════════════════════════════════════════════
-// ═══════════════════ UI LOGIC ═══════════════════════════════
-// ═══════════════════════════════════════════════════════════
-
-function fmt(n) {
-  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e4) return (n/1e3).toFixed(1) + 'K';
-  return Math.floor(n).toLocaleString();
-}
-function fmtDec(n, d=1) {
-  return Number(n).toFixed(d);
-}
-
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-// Toggle Crit/Speed fields based on item type (equipment has no crit/speed)
-function toggleWeaponFields(prefix) {
-  const type = document.getElementById(prefix + '-type').value;
-  const fields = document.getElementById(prefix + '-weapon-fields');
-  if (fields) fields.style.display = type === 'weapon' ? '' : 'none';
-}
-
-// ═══════════ FORWARD CALCULATOR ═══════════
-function parseNum(id) {
-  // Handle comma as decimal separator (European locale)
+// ═══════════ BUILDER HELPER FUNCS ═══════════
+function stepSp(id, minStep) {
   const el = document.getElementById(id);
-  const raw = el?.value?.replace(',', '.') || '0';
-  return parseFloat(raw) || 0;
+  const cur = parseInt(el.value)||0;
+  const charLevel = parseInt(document.getElementById('b-level')?.value) || 1;
+  const totalSP = Math.max(0, charLevel - 1);
+  
+  const spDmg = parseInt(document.getElementById('sp-dmg').value) || 0;
+  const spCrit = parseInt(document.getElementById('sp-crit').value) || 0;
+  const spSpeed = parseInt(document.getElementById('sp-speed').value) || 0;
+  const spHp = parseInt(document.getElementById('sp-hp').value) || 0;
+  const spToken = parseInt(document.getElementById('sp-token').value) || 0;
+  const usedSP = spDmg + spCrit + spSpeed + spHp + spToken;
+  
+  if (minStep > 0 && usedSP >= totalSP) return; // Cap
+  el.value = Math.max(0, cur + minStep);
+  updateBuilder();
 }
-
-function calcForward() {
-  const type = document.getElementById('fwd-type').value;
-  const rarity = document.getElementById('fwd-rarity').value;
-  const baseHp = parseNum('fwd-hp');
-  const baseDmg = parseNum('fwd-dmg');
-  const baseCrit = parseNum('fwd-crit');
-  const baseSpeed = parseNum('fwd-speed');
-  const fromLvl = parseInt(document.getElementById('fwd-from').value) || 0;
-  const toLvl = parseInt(document.getElementById('fwd-to').value) || 0;
-  const isWeapon = type === 'weapon';
-  const isEquip = type === 'equipment';
-
-  // Scale stats using iterative per-level formula
-  let finalHp = scaleStatFromTo(baseHp, fromLvl, toLvl, false);
-  let finalDmg = scaleStatFromTo(baseDmg, fromLvl, toLvl, false);
-  let finalCrit = scaleStatFromTo(baseCrit, fromLvl, toLvl, true);
-  let finalSpeed = scaleStatFromTo(baseSpeed, fromLvl, toLvl, false);
-
-  // Apply caps for weapons
-  let critCap = null, speedCap = null;
-  if (isWeapon) {
-    critCap = CRIT_CAP[rarity];
-    speedCap = SPEED_CAP[rarity];
-    if (finalCrit > critCap) finalCrit = critCap;
-    if (finalSpeed > speedCap) finalSpeed = speedCap;
-  }
-
-  // DMG MULT info (weapons only)
-  const dmgMultFrom = isWeapon ? getDmgMult(rarity, fromLvl) : null;
-  const dmgMultTo = isWeapon ? getDmgMult(rarity, toLvl) : null;
-
-  // Costs
-  const costs = calcUpgradeCost(rarity, isEquip, fromLvl, toLvl);
-
-  const res = document.getElementById('fwd-results');
-  res.classList.remove('hidden');
-  res.innerHTML = `
-    <div class="results-title">📊 Stats at +${toLvl}</div>
-    ${isWeapon ? `<div class="stat-row">
-      <span class="stat-label">🗡️ DMG MULT</span>
-      <span class="stat-value">×${fmtDec(dmgMultFrom,2)} <span class="arrow">→</span> <span class="upgraded">×${fmtDec(dmgMultTo,2)}</span>
-      <span class="cap-warn">(+${fmtDec(dmgMultTo - dmgMultFrom,2)})</span></span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">🪙 TKN Bonus</span>
-      <span class="stat-value" style="color:var(--r-legendary)">+${Math.round((RARITY_TOKEN_MULT[rarity] - 1) * 100)}%</span>
-    </div>` : ''}
-    <div class="stat-row">
-      <span class="stat-label">❤️ HP</span>
-      <span class="stat-value">${fmt(baseHp)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalHp)}</span></span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚔️ DMG</span>
-      <span class="stat-value">${fmt(baseDmg)} <span class="arrow">→</span> <span class="upgraded">${fmt(finalDmg)}</span></span>
-    </div>
-    ${isWeapon ? `
-    <div class="stat-row">
-      <span class="stat-label">🎯 Crit</span>
-      <span class="stat-value">${fmtDec(baseCrit)}% <span class="arrow">→</span> <span class="upgraded">${fmtDec(finalCrit)}%</span>
-      ${finalCrit >= critCap ? `<span class="cap-warn">(cap ${critCap}%)</span>` : ''}</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚡ Speed</span>
-      <span class="stat-value">${fmt(baseSpeed)}ms <span class="arrow">→</span> <span class="upgraded">${fmt(finalSpeed)}ms</span>
-      ${finalSpeed >= speedCap ? `<span class="cap-warn">(cap ${speedCap}ms)</span>` : ''}</span>
-    </div>
-    ` : ''}
-    <div class="cost-summary">
-      <div class="cost-box">
-        <div class="cost-label">🔩 Scrap Metal</div>
-        <div class="cost-val" style="color:var(--r-uncommon)">${fmt(costs.totalScrap)}</div>
-      </div>
-      <div class="cost-box">
-        <div class="cost-label">💎 $SIEGE</div>
-        <div class="cost-val" style="color:var(--r-legendary)">${fmt(costs.totalSiege)}</div>
-      </div>
-    </div>
-  `;
+function stepM(id, minStep, maxVal) {
+  const el = document.getElementById(id);
+  const cur = parseInt(el.value)||0;
+  el.value = Math.max(0, Math.min(maxVal, cur + minStep));
+  updateBuilder();
 }
-
-// ═══════════ REVERSE CALCULATOR ═══════════
-function calcReverse() {
-  const type = document.getElementById('rev-type').value;
-  const rarity = document.getElementById('rev-rarity').value;
-  const curHp = parseNum('rev-hp');
-  const curDmg = parseNum('rev-dmg');
-  const curCrit = parseNum('rev-crit');
-  const curSpeed = parseNum('rev-speed');
-  const level = parseInt(document.getElementById('rev-level').value) || 0;
-
-  // Find base stats via binary search (accounts for per-level rounding)
-  const baseHp = findBaseStat(curHp, level, false);
-  const baseDmg = findBaseStat(curDmg, level, false);
-  const baseCrit = findBaseStat(curCrit, level, true);
-  const baseSpeed = findBaseStat(curSpeed, level, false);
-
-  // Verify by forward-computing
-  const verifyHp = scaleStatIterative(baseHp, level, false);
-  const verifyDmg = scaleStatIterative(baseDmg, level, false);
-
-  const res = document.getElementById('rev-results');
-  res.classList.remove('hidden');
-  res.innerHTML = `
-    <div class="results-title">🔍 Base Stats (before +${level})</div>
-    <div class="stat-row">
-      <span class="stat-label">❤️ Base HP</span>
-      <span class="stat-value"><span class="base-val">${baseHp}</span> <span class="arrow">→</span> ${fmt(verifyHp)} ${verifyHp !== curHp ? '<span class="cap-warn">(≈'+fmt(curHp)+')</span>' : '✓'}</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚔️ Base DMG</span>
-      <span class="stat-value"><span class="base-val">${baseDmg}</span> <span class="arrow">→</span> ${fmt(verifyDmg)} ${verifyDmg !== curDmg ? '<span class="cap-warn">(≈'+fmt(curDmg)+')</span>' : '✓'}</span>
-    </div>
-    ${type === 'weapon' ? `
-    <div class="stat-row">
-      <span class="stat-label">🎯 Base Crit</span>
-      <span class="stat-value"><span class="base-val">${fmtDec(baseCrit,1)}%</span> <span class="arrow">→</span> ${fmtDec(curCrit)}%</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚡ Base Speed</span>
-      <span class="stat-value"><span class="base-val">${baseSpeed}ms</span> <span class="arrow">→</span> ${fmt(curSpeed)}ms</span>
-    </div>` : ''}
-    <div style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.75rem;color:var(--text-muted)">
-      💡 These are the original base stats at +0. Use them in Forward Calculator to plan upgrades.
-    </div>
-    <button class="btn btn-secondary" style="margin-top:12px" onclick="transferToForward('${type}','${rarity}',${baseHp},${baseDmg},${fmtDec(baseCrit,1)},${baseSpeed})">⚔️ Use in Forward Calculator</button>
-  `;
+function resetSkills() {
+  ['sp-dmg','sp-crit','sp-speed','sp-hp','sp-token'].forEach(id => document.getElementById(id).value = 0);
+  updateBuilder();
 }
-
-// ═══════════ COST TABLE ═══════════
-function calcCosts() {
-  const type = document.getElementById('cost-type').value;
-  const rarity = document.getElementById('cost-rarity').value;
-  const target = parseInt(document.getElementById('cost-target').value) || 50;
-  const isEquip = type === 'equipment';
-  const costs = calcUpgradeCost(rarity, isEquip, 0, target);
-
-  // Show every 5th level + last
-  const milestones = [];
-  for (let i = 0; i < costs.details.length; i++) {
-    if ((i+1) % 5 === 0 || i === costs.details.length - 1 || i < 5) {
-      milestones.push(costs.details[i]);
+function resetMastery() {
+  ['m-lifesteal','m-doublestrike','m-armorpen','m-bossslayer','m-finisher','m-armor','m-thorns','m-fortify','m-secondwind','m-tokensurge'].forEach(id => document.getElementById(id).value = 0);
+  updateBuilder();
+}
+function applyBulkEq() {
+  const rarity = document.getElementById('bulk-rarity').value;
+  const level = document.getElementById('bulk-level').value;
+  SLOTS.forEach(slot => {
+    const rEl = document.getElementById(`b-${slot.id}-rarity`);
+    if(rEl) { rEl.value = rarity; rEl.dataset.rarity = rarity; }
+    const lEl = document.getElementById(`b-${slot.id}-level`);
+    if(lEl) lEl.value = level;
+  });
+  updateBuilder();
+}
+function fillDefaultStats() {
+  SLOTS.forEach(slot => {
+    document.getElementById(`b-${slot.id}-hp`).value = slot.isWeapon ? 20 : 40;
+    document.getElementById(`b-${slot.id}-dmg`).value = slot.isWeapon ? 8 : 2;
+    if (slot.isWeapon) {
+      document.getElementById(`b-${slot.id}-crit`).value = 2;
+      document.getElementById(`b-${slot.id}-speed`).value = 25;
     }
-  }
-
-  const res = document.getElementById('cost-results');
-  res.classList.remove('hidden');
-  res.innerHTML = `
-    <div class="results-title">📋 Cost: +0 → +${target} (${RARITY_LABELS[rarity]} ${isEquip ? 'Equipment' : 'Weapon'})</div>
-    <div style="overflow-x:auto">
-    <table class="cost-table">
-      <thead><tr>
-        <th>Level</th>
-        <th>Scrap/lvl</th>
-        <th>$SIEGE/lvl</th>
-        <th>Total Scrap</th>
-        <th>Total $SIEGE</th>
-      </tr></thead>
-      <tbody>
-        ${milestones.map(d => `<tr>
-          <td style="color:var(--gold)">+${d.level}</td>
-          <td>${fmt(d.scrap)}</td>
-          <td>${fmt(d.siege)}</td>
-          <td style="color:var(--r-uncommon)">${fmt(d.totalScrap)}</td>
-          <td style="color:var(--r-legendary)">${fmt(d.totalSiege)}</td>
-        </tr>`).join('')}
-        <tr class="total-row">
-          <td>TOTAL</td>
-          <td></td>
-          <td></td>
-          <td>${fmt(costs.totalScrap)}</td>
-          <td>${fmt(costs.totalSiege)}</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-    ${target > 100 ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:0.75rem;color:var(--danger)">
-      ⚠️ Levels above +100 have a <strong>50% burn chance</strong> per upgrade. Use Upgrade Scrolls (100K $SIEGE each) to protect your items.
-    </div>` : ''}
-  `;
-}
-
-// ═══════════ TRANSFER TO FORWARD ═══════════
-function transferToForward(type, rarity, hp, dmg, crit, speed) {
-  document.getElementById('fwd-type').value = type;
-  const rarSel = document.getElementById('fwd-rarity');
-  rarSel.value = rarity;
-  rarSel.dataset.rarity = rarity;
-  document.getElementById('fwd-hp').value = hp;
-  document.getElementById('fwd-dmg').value = dmg;
-  document.getElementById('fwd-crit').value = crit;
-  document.getElementById('fwd-speed').value = speed;
-  document.getElementById('fwd-from').value = 0;
-  // Switch to forward tab
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector('[data-tab="forward"]').classList.add('active');
-  document.getElementById('tab-forward').classList.add('active');
-  // Scroll to top
-  window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-// ═══════════ EQUIPMENT BUILDER ═══════════
-const SLOTS = [
-  {id:'weapon', label:'Weapon', icon:'⚔️', isWeapon:true},
-  {id:'helmet', label:'Helmet', icon:'🪖', isWeapon:false},
-  {id:'armor',  label:'Armor',  icon:'🛡️', isWeapon:false},
-  {id:'boots',  label:'Boots',  icon:'👢', isWeapon:false},
-  {id:'shield', label:'Shield', icon:'🔰', isWeapon:false},
-  {id:'accessory1', label:'Accessory 1', icon:'💍', isWeapon:false},
-  {id:'accessory2', label:'Accessory 2', icon:'💍', isWeapon:false},
-];
-
-function initBuilder() {
-  const grid = document.getElementById('builder-slots');
-  grid.innerHTML = SLOTS.map(slot => `
-    <div class="slot-card" id="slot-${slot.id}">
-      <div class="slot-header">${slot.icon} ${slot.label}</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Rarity</label>
-          <select id="b-${slot.id}-rarity" class="rarity-select" onchange="this.dataset.rarity=this.value;updateBuilder()">
-            ${RARITIES.map(r => `<option value="${r}" ${r==='epic'?'selected':''}>${RARITY_LABELS[r]}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Level</label>
-          <input type="number" id="b-${slot.id}-level" value="30" min="0" max="200" onchange="updateBuilder()">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Base HP</label><input type="number" id="b-${slot.id}-hp" value="${slot.isWeapon?'20':'40'}" min="0" onchange="updateBuilder()"></div>
-        <div class="form-group"><label>Base DMG</label><input type="number" id="b-${slot.id}-dmg" value="${slot.isWeapon?'8':'2'}" min="0" onchange="updateBuilder()"></div>
-      </div>
-      ${slot.isWeapon ? `
-      <div class="form-row">
-        <div class="form-group"><label>Base Crit %</label><input type="number" id="b-${slot.id}-crit" value="2" min="0" step="0.1" onchange="updateBuilder()"></div>
-        <div class="form-group"><label>Base Speed</label><input type="number" id="b-${slot.id}-speed" value="25" min="0" onchange="updateBuilder()"></div>
-      </div>` : ''}
-    </div>
-  `).join('');
-  // Set initial data-rarity
-  document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+  });
   updateBuilder();
 }
 
-function updateBuilder() {
-  let totalHp = 0, totalDmg = 0, totalCrit = 0, totalSpeed = 0;
-  let totalScrap = 0, totalSiege = 0;
-  const rarityCounts = {};
-
-  SLOTS.forEach(slot => {
-    const rarity = document.getElementById(`b-${slot.id}-rarity`)?.value || 'epic';
-    const level = parseInt(document.getElementById(`b-${slot.id}-level`)?.value) || 0;
-    const baseHp = parseFloat(document.getElementById(`b-${slot.id}-hp`)?.value) || 0;
-    const baseDmg = parseFloat(document.getElementById(`b-${slot.id}-dmg`)?.value) || 0;
-
-    rarityCounts[rarity] = (rarityCounts[rarity] || 0) + 1;
-
-    // Scaled stats using iterative per-level formula
-    let hp = scaleStatIterative(baseHp, level, false);
-    let dmg = scaleStatIterative(baseDmg, level, false);
-    totalHp += hp;
-    totalDmg += dmg;
-
-    if (slot.isWeapon) {
-      const baseCrit = parseFloat(document.getElementById(`b-${slot.id}-crit`)?.value) || 0;
-      const baseSpeed = parseFloat(document.getElementById(`b-${slot.id}-speed`)?.value) || 0;
-      let crit = scaleStatIterative(baseCrit, level, true);
-      let speed = scaleStatIterative(baseSpeed, level, false);
-      if (crit > CRIT_CAP[rarity]) crit = CRIT_CAP[rarity];
-      if (speed > SPEED_CAP[rarity]) speed = SPEED_CAP[rarity];
-      totalCrit += crit;
-      totalSpeed += speed;
-    }
-
-    // Flat rarity bonuses
-    const flat = FLAT_BONUS[rarity];
-    totalHp += flat.hp;
-    totalDmg += flat.dmg;
-    totalCrit += flat.crit;
-    totalSpeed += flat.speed;
-
-    // Costs
-    const costs = calcUpgradeCost(rarity, !slot.isWeapon, 0, level);
-    totalScrap += costs.totalScrap;
-    totalSiege += costs.totalSiege;
+// ═══════════ ACTIVE BUFFS HELPERS ═══════════
+let catchupBonus = 0;
+function setCatchup(val) {
+  catchupBonus = val;
+  document.querySelectorAll('#catchup-btns .catchup-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.val) === val);
   });
-
-  // Set bonuses
-  const {totalDmgBonus, totalHpBonus, activeBonuses} = getSetBonuses(rarityCounts);
-
-  const summary = document.getElementById('builder-summary');
-  summary.innerHTML = `
-    <div class="results-title" style="margin-bottom:16px">📊 Total Character Stats</div>
-    <div class="summary-grid">
-      <div class="summary-stat">
-        <div class="s-label">❤️ Total HP</div>
-        <div class="s-value" style="color:var(--r-rare)">${fmt(totalHp * (1 + totalHpBonus/100))}</div>
-        <div class="s-detail">${fmt(totalHp)} base${totalHpBonus>0? ` +${totalHpBonus}% set`:''}</div>
-      </div>
-      <div class="summary-stat">
-        <div class="s-label">⚔️ Total DMG</div>
-        <div class="s-value" style="color:var(--danger)">${fmt(totalDmg * (1 + totalDmgBonus/100))}</div>
-        <div class="s-detail">${fmt(totalDmg)} base${totalDmgBonus>0? ` +${totalDmgBonus}% set`:''}</div>
-      </div>
-      <div class="summary-stat">
-        <div class="s-label">🎯 Crit</div>
-        <div class="s-value" style="color:var(--r-epic)">${fmtDec(totalCrit)}%</div>
-      </div>
-      <div class="summary-stat">
-        <div class="s-label">⚡ Speed</div>
-        <div class="s-value" style="color:var(--r-uncommon)">${fmt(Math.abs(totalSpeed))}ms</div>
-      </div>
-      <div class="summary-stat">
-        <div class="s-label">🔩 Total Scrap</div>
-        <div class="s-value" style="color:var(--r-uncommon)">${fmt(totalScrap)}</div>
-      </div>
-      <div class="summary-stat">
-        <div class="s-label">💎 Total $SIEGE</div>
-        <div class="s-value" style="color:var(--r-legendary)">${fmt(totalSiege)}</div>
-      </div>
-    </div>
-    ${activeBonuses.length > 0 ? `
-    <div class="set-bonuses">
-      <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Set Bonuses Active</div>
-      ${activeBonuses.map(b => `
-        <span class="set-bonus-tag" style="background:${RARITY_BG[b.rarity]};color:${RARITY_COLORS[b.rarity]}">
-          ${RARITY_LABELS[b.rarity]} ${b.count}pc: +${b.dmg}% DMG & HP
-        </span>
-      `).join('')}
-    </div>` : ''}
-  `;
+  updateBuilder();
+}
+function stepRune(id, step) {
+  const el = document.getElementById(id);
+  const cur = parseFloat(el.value) || 0;
+  el.value = Math.max(0, Math.round((cur + step * 0.5) * 10) / 10);
+  updateBuilder();
 }
 
-// ═══════════ INIT ═══════════
+// ═══════════ IMPORT FROM GAME ═══════════
+
+// The bookmarklet code — runs on solsiege.com, reads game state locally, shows popup
+const BOOKMARKLET_SRC = `(function(){
+  var out={ls:{},pinia:null,raw:{}};
+  // localStorage scan
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    try{out.ls[k]=JSON.parse(localStorage.getItem(k));}
+    catch(e){out.ls[k]=localStorage.getItem(k);}
+  }
+  // Pinia store via Vue 3 devtools hook
+  try{
+    var el=document.querySelector('[data-v-app]')||document.querySelector('#root')||document.body;
+    var app=el.__vue_app__;
+    if(!app){var els=document.querySelectorAll('*');for(var j=0;j<els.length;j++){if(els[j].__vue_app__){app=els[j].__vue_app__;break;}}}
+    if(app){
+      var gp=app.config.globalProperties;
+      if(gp.$pinia&&gp.$pinia.state){out.pinia=JSON.parse(JSON.stringify(gp.$pinia.state.value));}
+    }
+  }catch(e){out.piniaErr=e.message;}
+  // window game keys
+  out.windowKeys=Object.keys(window).filter(function(k){return/game|player|store|siege|character|equip|mastery|skill/i.test(k);});
+  var json=JSON.stringify(out,null,2);
+  // Show overlay
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:sans-serif';
+  ov.innerHTML='<div style="background:#0f0b1a;border:1px solid #c9a84c;border-radius:14px;padding:24px;width:560px;max-height:80vh;overflow:auto;color:#e2dcd0"><h3 style="color:#c9a84c;margin:0 0 12px;font-size:16px">Sol Siege — Export Data</h3><p style="font-size:13px;color:#aaa;margin:0 0 12px">Click <b style=color:#4ade80>Copy JSON</b> then go back to Sol Siege Calculator and paste.</p><textarea id="_ss_ta" style="width:100%;height:200px;background:#0a0710;color:#e2dcd0;border:1px solid #333;border-radius:6px;padding:8px;font-size:11px;font-family:monospace;resize:vertical">'+json.replace(/</g,'&lt;')+'</textarea><div style="display:flex;gap:8px;margin-top:12px"><button onclick="navigator.clipboard.writeText(document.getElementById(\'_ss_ta\').value);this.textContent=\'✓ Copied!\';this.style.background=\'#166534\'" style="padding:8px 18px;background:#c9a84c;border:none;border-radius:6px;cursor:pointer;font-weight:700;color:#0a0710">Copy JSON</button><button onclick="this.closest(\'div[style*=inset]\').remove()" style="padding:8px 18px;background:#222;border:none;border-radius:6px;cursor:pointer;color:#aaa">Close</button></div></div>';
+  document.body.appendChild(ov);
+})();`;
+
+function initBookmarklet() {
+  const minified = 'javascript:' + encodeURIComponent(BOOKMARKLET_SRC);
+  const link = document.getElementById('bookmarklet-link');
+  const code = document.getElementById('bookmarklet-code');
+  if (link) link.href = minified;
+  if (code) code.textContent = 'javascript:' + BOOKMARKLET_SRC.replace(/\s+/g,' ').trim();
+}
+
+// Deep-get helper
+function dg(obj, ...paths) {
+  for (const path of paths) {
+    let v = obj;
+    for (const k of path.split('.')) {
+      if (v == null) break;
+      v = v[k];
+    }
+    if (v != null) return v;
+  }
+  return undefined;
+}
+
+function doImport() {
+  const status = document.getElementById('import-status');
+  const raw = document.getElementById('import-json').value.trim();
+  if (!raw) { status.className = 'import-status err'; status.textContent = '⚠ Paste JSON from the bookmarklet first.'; return; }
+  
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { status.className = 'import-status err'; status.textContent = '✗ Invalid JSON: ' + e.message; return; }
+
+  // Try to find the game state across possible store layouts
+  // Support: { pinia: {...} } OR raw pinia state OR localStorage pattern
+  const pinia = data.pinia || data;
+  const ls = data.ls || data.localStorage || {};
+  
+  let filled = 0;
+  const set = (id, val) => {
+    if (val == null || val === undefined) return;
+    const el = document.getElementById(id);
+    if (el) { el.value = val; filled++; }
+  };
+
+  // ── Probe common Pinia store names ──
+  // Player level & class
+  const playerStore = pinia.player || pinia.character || pinia.game || pinia.gameStore || {};
+  const charLevel = dg(playerStore, 'level', 'playerLevel', 'charLevel') 
+    || dg(pinia, 'player.level', 'game.level', 'character.level');
+  const charClass = dg(playerStore, 'class', 'charClass', 'heroClass', 'selectedClass') 
+    || dg(pinia, 'player.class', 'game.class');
+  set('b-level', charLevel);
+  if (charClass) {
+    const cls = String(charClass).toLowerCase();
+    const clsMap = {warrior:'warrior',fighter:'warrior',knight:'warrior',archer:'archer',ranger:'archer',hunter:'archer',mage:'mage',wizard:'mage',sorcerer:'mage'};
+    set('b-class', clsMap[cls] || cls);
+  }
+
+  // ── Skill points ──
+  const skills = dg(playerStore, 'skills', 'statTree', 'skillPoints', 'stats')
+    || dg(pinia, 'player.skills', 'character.skills', 'game.skills') || {};
+  set('sp-dmg',   dg(skills, 'damage', 'dmg', 'attack', 'Damage'));
+  set('sp-crit',  dg(skills, 'critical', 'crit', 'Critical'));
+  set('sp-speed', dg(skills, 'speed', 'attackSpeed', 'Speed'));
+  set('sp-hp',    dg(skills, 'health', 'hp', 'vitality', 'Health'));
+  set('sp-token', dg(skills, 'tokenDrop', 'token', 'tokens', 'TokenDrop'));
+
+  // ── Mastery ──
+  const mastery = dg(playerStore, 'mastery', 'masteries', 'masteryPoints')
+    || dg(pinia, 'player.mastery', 'mastery.points', 'game.mastery') || {};
+  set('m-lifesteal',   dg(mastery, 'lifeSteal', 'lifesteal', 'vamp', 'Lifesteal'));
+  set('m-doublestrike',dg(mastery, 'doubleStrike', 'doubleHit', 'twinStrike', 'DoubleStrike'));
+  set('m-armorpen',    dg(mastery, 'armorPenetration', 'armorPen', 'penetration', 'ArmorPen'));
+  set('m-bossslayer',  dg(mastery, 'bossSlayer', 'boss', 'BossSlayer'));
+  set('m-finisher',    dg(mastery, 'finisher', 'execute', 'Finisher'));
+  set('m-armor',       dg(mastery, 'armor', 'defense', 'damageReduction', 'Armor'));
+  set('m-thorns',      dg(mastery, 'thorns', 'reflect', 'Thorns'));
+  set('m-fortify',     dg(mastery, 'fortify', 'shield', 'Fortify'));
+  set('m-secondwind',  dg(mastery, 'secondWind', 'revive', 'SecondWind'));
+  set('m-tokensurge',  dg(mastery, 'tokenSurge', 'TokenSurge'));
+
+  // ── Equipment slots ──
+  const SLOT_KEYS = {
+    weapon: ['weapon','sword','mainhand','Weapon'],
+    helmet: ['helmet','head','helm','Helmet'],
+    armor: ['armor','chest','body','Armor'],
+    gloves: ['gloves','hands','gauntlets','Gloves'],
+    boots: ['boots','feet','shoes','Boots'],
+    ring: ['ring','accessory','Ring'],
+    amulet: ['amulet','necklace','neck','pendant','Amulet']
+  };
+  const equipment = dg(playerStore, 'equipment', 'items', 'gear', 'loadout')
+    || dg(pinia, 'inventory.equipped', 'player.equipment', 'game.equipment') || {};
+  
+  for (const [slotId, aliases] of Object.entries(SLOT_KEYS)) {
+    let item = null;
+    for (const alias of aliases) {
+      item = equipment[alias]; if (item) break;
+    }
+    if (!item) continue;
+    const rarity = dg(item, 'rarity', 'tier', 'quality');
+    const level = dg(item, 'level', 'upgradeLevel', 'lvl', 'stars');
+    const hp = dg(item, 'stats.hp', 'hp', 'health', 'stats.health', 'baseHp');
+    const dmg = dg(item, 'stats.dmg', 'stats.damage', 'dmg', 'damage', 'attack', 'baseDmg');
+    const crit = dg(item, 'stats.crit', 'crit', 'critChance', 'stats.critChance');
+    const speed = dg(item, 'stats.speed', 'speed', 'attackSpeed', 'stats.attackSpeed');
+    
+    if (rarity) {
+      const rEl = document.getElementById(`b-${slotId}-rarity`);
+      if (rEl) { rEl.value = String(rarity).toLowerCase(); rEl.dataset.rarity = rEl.value; filled++; }
+    }
+    set(`b-${slotId}-level`, level);
+    set(`b-${slotId}-hp`, hp);
+    set(`b-${slotId}-dmg`, dmg);
+    if (slotId === 'weapon') { set(`b-${slotId}-crit`, crit); set(`b-${slotId}-speed`, speed); }
+  }
+
+  // ── If nothing found in pinia, try flat localStorage keys ──
+  if (filled === 0) {
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'object' && v) {
+        const level = dg(v, 'level', 'playerLevel');
+        if (level) { set('b-level', level); break; }
+      }
+    }
+  }
+
+  updateBuilder();
+  
+  if (filled > 0) {
+    status.className = 'import-status ok';
+    status.textContent = `✓ Imported ${filled} field(s). Review and adjust as needed.`;
+  } else {
+    status.className = 'import-status err';
+    status.textContent = '⚠ No recognizable game data found. The game may use a different store structure. Open the browser console on the game page, run: console.log(JSON.stringify(document.querySelector("[data-v-app]").__vue_app__.config.globalProperties.$pinia.state.value)) and share the output to help calibrate.';
+  }
+}
+
 initBuilder();
-// Set initial rarity data attributes
+initBookmarklet();
 document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
 </script>
 </body>
