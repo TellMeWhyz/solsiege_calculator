@@ -387,6 +387,58 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* ═══════════════════ TIP DEV BUTTON & MODAL ═══════════════════ */
+.tip-btn-container {
+  margin-top: 32px; text-align: center; padding-bottom: 20px;
+}
+.tip-btn-bottom {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim);
+  color: var(--gold); padding: 10px 18px; border-radius: 12px;
+  font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+  transition: all 0.25s;
+}
+.tip-btn-bottom:hover {
+  background: rgba(201,168,76,0.2); border-color: var(--gold);
+  transform: translateY(-2px); box-shadow: 0 4px 12px rgba(201,168,76,0.15);
+}
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200;
+  display: none; align-items: center; justify-content: center; backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+.modal-content {
+  background: var(--surface2); border: 1px solid var(--gold-dim);
+  border-radius: 18px; padding: 28px; width: 440px; max-width: 95%;
+  box-shadow: 0 16px 64px rgba(0,0,0,0.6); position: relative;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-close {
+  position: absolute; top: 14px; right: 14px; cursor: pointer;
+  color: var(--text-muted); font-size: 1.4rem; transition: color 0.2s;
+}
+.modal-close:hover { color: var(--text); }
+.modal-title {
+  font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem;
+  margin-bottom: 24px; text-align: center; letter-spacing: 0.05em;
+}
+.tip-info-row { margin-bottom: 18px; }
+.tip-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.06em; }
+.tip-value {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; font-size: 0.65rem; color: var(--text); word-break: break-all;
+  position: relative; cursor: pointer; transition: all 0.2s;
+  font-family: 'Inter', monospace; line-height: 1.4;
+}
+.tip-value:hover { border-color: var(--gold-dim); background: rgba(201,168,76,0.08); }
+.tip-value.contact { font-family: 'Inter', sans-serif; color: #93c5fd; font-size: 0.8rem; }
+.tip-value::after {
+  content: 'Click to copy'; position: absolute; bottom: -20px; right: 0;
+  font-size: 0.6rem; color: var(--gold-dim); opacity: 0; transition: opacity 0.2s;
+}
+.tip-value:hover::after { opacity: 1; }
 </style>
 </head>
 <body>
@@ -529,6 +581,11 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
     ... (builder content)
   </div>
   -->
+  <div class="tip-btn-container">
+    <button class="tip-btn-bottom" onclick="openTipModal()">
+      <span style="font-size: 1.1rem;">☕</span> Tip Dev
+    </button>
+  </div>
 </div>
 
 <script>
@@ -1469,6 +1526,45 @@ function doImport() {
 // initBuilder();
 // initBookmarklet();
 document.querySelectorAll('.rarity-select').forEach(el => { el.dataset.rarity = el.value; });
+
+function openTipModal() {
+  document.getElementById('tip-modal-overlay').classList.add('open');
+}
+function closeTipModal(e) {
+  document.getElementById('tip-modal-overlay').classList.remove('open');
+}
+async function copyToClipboard(text, el) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const originalText = el.textContent;
+    el.textContent = '✓ Copied to clipboard!';
+    el.style.color = 'var(--success)';
+    setTimeout(() => {
+      el.textContent = originalText;
+      el.style.color = '';
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+  }
+}
 </script>
+
+<div class="modal-overlay" id="tip-modal-overlay" onclick="closeTipModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <span class="modal-close" onclick="closeTipModal(event)">&times;</span>
+    <div class="modal-title">Support Project</div>
+    
+    <div class="tip-info-row">
+      <div class="tip-label">Solana (SOL/USDC)</div>
+      <div class="tip-value" onclick="copyToClipboard('E7QtCpAdGAk2m49Wu5vNNGvbzEtBPDD4Mz9mXvDtLAHC', this)">E7QtCpAdGAk2m49Wu5vNNGvbzEtBPDD4Mz9mXvDtLAHC</div>
+    </div>
+    
+    <div class="tip-info-row" style="margin-bottom: 0;">
+      <div class="tip-label">Contact / Suggestions</div>
+      <div class="tip-value contact" onclick="window.open('https://t.me/tellmewhyz', '_blank')">@tellmewhyz (Telegram)</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
