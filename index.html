@@ -36,6 +36,7 @@
     <div class="tab-content active" id="tab-forward">
       <div class="card">
         <div class="card-title"><span class="icon">⚔️</span> Forward Calculator</div>
+        <button class="btn btn-secondary btn-sm import-btn-top" onclick="window.openImportStatsModal('fwd')">📥 Import Stats</button>
         <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Enter item stats at any level and
           target level to see final stats &amp; upgrade cost.</p>
         <div class="form-row">
@@ -138,6 +139,7 @@
     <div class="tab-content" id="tab-reverse">
       <div class="card">
         <div class="card-title"><span class="icon">🔄</span> Reverse Calculator</div>
+        <button class="btn btn-secondary btn-sm import-btn-top" onclick="window.openImportStatsModal('rev')">📥 Import Stats</button>
         <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:14px;">Enter current stats &amp; level to find
           original base stats.</p>
         <div class="form-row">
@@ -296,6 +298,37 @@
     </div>
   </div>
 
-</body>
+  <!-- IMPORT STATS MODAL -->
+  <div class="modal-overlay" id="import-stats-modal-overlay" onclick="window.closeImportStatsModal()">
+    <div class="modal-content import-modal" onclick="event.stopPropagation()">
+      <span class="modal-close" onclick="window.closeImportStatsModal()">&times;</span>
+      <div class="modal-title">Import Item Stats</div>
+      
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+        Copy the item details from the game and paste them below. <br>
+        Supported formats are shown in the examples.
+      </p>
 
+      <div class="import-examples">
+        <div class="import-example">
+          <img src="example_inventory.png" alt="Format 1 Example">
+          <div class="example-label">Format 1 (Inventory)</div>
+        </div>
+        <div class="import-example">
+          <img src="example_market.png" alt="Format 2 Example">
+          <div class="example-label">Format 2 (Market/Pact)</div>
+        </div>
+      </div>
+
+      <textarea id="import-textarea" class="import-textarea" placeholder="Paste text here...
+Example:
+Legendary Axe
+WEAPON
+..."></textarea>
+      
+      <button class="btn btn-primary" style="margin-top: 12px; width: 100%;" onclick="window.handleImportStats()">Parse & Apply</button>
+    </div>
+  </div>
+
+</body>
 </html>

@@ -5,6 +5,7 @@
 import { calcForward, toggleWeaponFields, syncForwardOptions, syncForwardLevels, updateStatFromSlider, updateSliderFromStat } from './tabs/forward.js';
 import { calcReverse, transferToForward, syncReverseOptions, updateStatFromSliderRev, updateSliderFromStatRev } from './tabs/reverse.js';
 import { calcCosts } from './tabs/costs.js';
+import { parseItemStats, applyImportedStats } from './import.js';
 import {
     initBuilder, updateBuilder, initBookmarklet, doImport,
     stepSp, stepM, resetSkills, resetMastery,
@@ -82,6 +83,31 @@ window.openTipModal = function () {
 };
 window.closeTipModal = function () {
     document.getElementById('tip-modal-overlay').classList.remove('open');
+};
+
+// ══════ IMPORT MODAL ══════
+let currentImportTab = 'fwd';
+
+window.openImportStatsModal = function (targetTab) {
+    currentImportTab = targetTab;
+    document.getElementById('import-stats-modal-overlay').classList.add('open');
+    document.getElementById('import-textarea').value = '';
+    document.getElementById('import-textarea').focus();
+};
+
+window.closeImportStatsModal = function () {
+    document.getElementById('import-stats-modal-overlay').classList.remove('open');
+};
+
+window.handleImportStats = function () {
+    const text = document.getElementById('import-textarea').value;
+    const stats = parseItemStats(text);
+    if (!stats || (stats.hp === 0 && stats.dmg === 0)) {
+        alert("Could not parse stats from the provided text.");
+        return;
+    }
+    applyImportedStats(stats, currentImportTab);
+    window.closeImportStatsModal();
 };
 window.copyToClipboard = async function (text, el) {
     try {

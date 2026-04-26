@@ -96,6 +96,7 @@ body::before {
   border-radius: 14px; padding: 20px;
   margin-bottom: 16px;
   backdrop-filter: blur(8px);
+  position: relative;
 }
 .card-title {
   font-family: 'Cinzel', serif; font-weight: 700; font-size: 1rem;
@@ -534,4 +535,93 @@ select.rarity-select[data-rarity="mythical"] { color: var(--r-mythical); }
 .slider-group input[type="number"] {
   width: 80px;
   text-align: center;
+}
+
+/* ═══════════════════ IMPORT STATS ═══════════════════ */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  height: 28px;
+  width: auto;
+}
+
+.import-btn-top {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: bold;
+  width: auto;
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+}
+
+.import-btn-top:hover {
+  background: rgba(201, 168, 76, 0.25);
+  border-color: var(--gold);
+  color: #fff;
+}
+
+.import-modal {
+  max-width: 800px;
+  width: 95vw;
+}
+
+.import-examples {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.import-example {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.import-example img {
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--border);
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.import-example:hover img {
+  opacity: 1;
+}
+
+.example-label {
+  padding: 8px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.import-textarea {
+  width: 100%;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 16px;
+  font-family: monospace;
+  font-size: 0.95rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.import-textarea:focus {
+  border-color: var(--gold);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
 }
