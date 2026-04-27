@@ -59,6 +59,16 @@ export function parseItemStats(text) {
     return stats;
 }
 
+function highlightElement(el) {
+    if (!el) return;
+    el.classList.remove('highlight-success');
+    void el.offsetWidth; // Trigger reflow to restart animation
+    el.classList.add('highlight-success');
+    setTimeout(() => {
+        el.classList.remove('highlight-success');
+    }, 1200);
+}
+
 export function applyImportedStats(stats, targetTabPrefix) {
     if (!stats) return false;
 
@@ -67,10 +77,14 @@ export function applyImportedStats(stats, targetTabPrefix) {
     // Set Type & Rarity
     const typeEl = document.getElementById(`${prefix}-type`);
     const rarityEl = document.getElementById(`${prefix}-rarity`);
-    if (typeEl) typeEl.value = stats.type;
+    if (typeEl) {
+        typeEl.value = stats.type;
+        highlightElement(typeEl);
+    }
     if (rarityEl) {
         rarityEl.value = stats.rarity;
         rarityEl.dataset.rarity = stats.rarity;
+        highlightElement(rarityEl);
     }
 
     // Toggle fields based on type
@@ -81,7 +95,10 @@ export function applyImportedStats(stats, targetTabPrefix) {
     // Set Level
     const levelEl = document.getElementById(prefix === 'fwd' ? 'fwd-from' : 'rev-level');
     const levelSlider = document.getElementById(prefix === 'fwd' ? 'fwd-from-slider' : 'rev-level-slider');
-    if (levelEl) levelEl.value = stats.level;
+    if (levelEl) {
+        levelEl.value = stats.level;
+        highlightElement(levelEl);
+    }
     if (levelSlider) levelSlider.value = stats.level;
 
     // VERY IMPORTANT: Sync options FIRST to calculate new allowed stat ranges based on new type/rarity/level
@@ -96,6 +113,7 @@ export function applyImportedStats(stats, targetTabPrefix) {
     const hpEl = document.getElementById(`${prefix}-hp`);
     if (hpEl) {
         hpEl.value = stats.hp;
+        highlightElement(hpEl);
         if (prefix === 'fwd' && window.updateSliderFromStat) window.updateSliderFromStat('hp');
         if (prefix === 'rev' && window.updateSliderFromStatRev) window.updateSliderFromStatRev('hp');
     }
@@ -103,6 +121,7 @@ export function applyImportedStats(stats, targetTabPrefix) {
     const dmgEl = document.getElementById(`${prefix}-dmg`);
     if (dmgEl) {
         dmgEl.value = stats.dmg;
+        highlightElement(dmgEl);
         if (prefix === 'fwd' && window.updateSliderFromStat) window.updateSliderFromStat('dmg');
         if (prefix === 'rev' && window.updateSliderFromStatRev) window.updateSliderFromStatRev('dmg');
     }
@@ -111,6 +130,7 @@ export function applyImportedStats(stats, targetTabPrefix) {
         const critEl = document.getElementById(`${prefix}-crit`);
         if (critEl) {
             critEl.value = stats.crit;
+            highlightElement(critEl);
             if (prefix === 'fwd' && window.updateSliderFromStat) window.updateSliderFromStat('crit');
             if (prefix === 'rev' && window.updateSliderFromStatRev) window.updateSliderFromStatRev('crit');
         }
@@ -118,6 +138,7 @@ export function applyImportedStats(stats, targetTabPrefix) {
         const speedEl = document.getElementById(`${prefix}-speed`);
         if (speedEl) {
             speedEl.value = stats.speed;
+            highlightElement(speedEl);
             if (prefix === 'fwd' && window.updateSliderFromStat) window.updateSliderFromStat('speed');
             if (prefix === 'rev' && window.updateSliderFromStatRev) window.updateSliderFromStatRev('speed');
         }

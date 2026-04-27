@@ -13,8 +13,6 @@
     href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-  <!-- Vercel Web Analytics -->
-  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 
 <body>
@@ -22,7 +20,18 @@
   <div class="app">
     <!-- HEADER -->
     <div class="header">
-      <h1>Sol Siege Calculator</h1>
+      <div style="display:flex; justify-content:center; align-items:center; position:relative; max-width:600px; margin:0 auto;">
+        <h1 style="margin: 0 auto;">Sol Siege Calculator</h1>
+        <div class="theme-switch-wrapper">
+          <label class="theme-switch" for="theme-checkbox">
+            <input type="checkbox" id="theme-checkbox" onchange="window.toggleTheme()">
+            <div class="slider-toggle">
+              <span class="icon">☀️</span>
+              <span class="icon">🌙</span>
+            </div>
+          </label>
+        </div>
+      </div>
       <div class="subtitle">Equipment Stats &amp; Upgrade Costs</div>
     </div>
 

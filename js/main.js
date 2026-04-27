@@ -124,6 +124,49 @@ window.copyToClipboard = async function (text, el) {
     }
 };
 
+// ══════ THEME TOGGLE ══════
+window.initTheme = function () {
+    const savedTheme = localStorage.getItem('solsiege_theme');
+    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    
+    let theme = 'dark';
+    if (savedTheme) {
+        theme = savedTheme;
+    } else if (systemPrefersLight) {
+        theme = 'light';
+    }
+    
+    document.documentElement.setAttribute('data-theme', theme);
+
+    updateThemeToggleButton(theme);
+};
+
+window.toggleTheme = function () {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('solsiege_theme', newTheme);
+    updateThemeToggleButton(newTheme);
+};
+
+function updateThemeToggleButton(theme) {
+    const checkbox = document.getElementById('theme-checkbox');
+    if (checkbox) {
+        checkbox.checked = theme === 'light';
+    }
+}
+
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+    if (!localStorage.getItem('solsiege_theme')) {
+        const newTheme = e.matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        updateThemeToggleButton(newTheme);
+    }
+});
+
+// Initialize theme on load
+window.initTheme();
+
 // ══════ BUILDER INIT (when tab is enabled) ══════
 // initBuilder();
 // initBookmarklet();
